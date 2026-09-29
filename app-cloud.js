@@ -104,7 +104,17 @@ async function addMaterial(code, existing=null){
  const m=existing||{};
  const title=prompt('Judul materi:',m.title||'');if(!title)return;
  const description=prompt('Deskripsi singkat:',m.description||'')??'';
- const type=prompt('Jenis materi (text/image/video/pdf/link):',m.material_type||'text')||'text';
+ const typeInput=prompt('Jenis materi (Teks/Gambar/Video/PDF/Link):',m.material_type||'text')||'text';
+const typeMap={
+  'teks':'text',
+  'text':'text',
+  'gambar':'image',
+  'image':'image',
+  'video':'video',
+  'pdf':'pdf',
+  'link':'link'
+};
+const type=typeMap[typeInput.trim().toLowerCase()]||'text';
  const content=prompt('Isi materi (boleh dikosongkan):',m.content||'')??'';
  const media=prompt('URL media/PDF/video/link (boleh dikosongkan):',m.media_url||'')??'';
  const order=Number(prompt('Urutan materi:',m.order_number||1)||1);
