@@ -59,7 +59,7 @@ async function studentAnswers(){
 }
 async function renderStudent(){
  const a=await studentAnswers(); const done=new Set(a.filter(x=>x.status==='submitted'||x.status==='reviewed').map(x=>x.mission_no));
- shell(`<main class="main"><div class="welcome"><div><div class="kicker">MODE SISWA</div><h2 class="h2">Halo, ${esc(S.student.name)} 👋</h2><p class="sub">${esc(S.student.class_label)} • Kode ${esc(S.student.class_code)}</p></div><div class="stat"><span>Progress</span><b>${done.size}/7</b></div></div><div class="grid2"><section class="card"><div class="section-head"><h3>Peta Misi</h3><span class="tag">${done.size}/7 selesai</span></div><div>${missions.map(m=>{const ok=done.has(m.id),open=m.id===1||done.has(m.id-1);return `<button class="mission ${ok?'done':''} ${open?'':'locked'}" onclick="${open?`mission(${m.id})`:'locked()'}"><div class="num">${m.id}</div><div><strong>Misi ${m.id} — ${esc(m.title)}</strong><small>${esc(m.sub)}</small></div><b>${ok?'✓':open?'→':'🔒'}</b></button>`}).join('')}</div></section><aside class="card"><div class="section-head"><h3>Alur Belajar</h3></div><div class="check"><div>1. Pelajari materi</div><div>2. Baca cerpen</div><div>3. Selesaikan Misi 1–7</div><div>4. Buat infografik digital</div><div>5. Presentasi & refleksi</div></div><button class="btn full" style="margin-top:14px" onclick="materials()">📚 Materi</button><button class="ghost full" style="margin-top:9px;background:#eaf2f8;color:#17365d" onclick="story()">📖 Baca Cerpen</button>${done.size===7?`<button class="btn full" style="margin-top:9px" onclick="finalProduct()">🎨 Tantangan Akhir</button>`:''}</aside></div></main>`,'Mode Siswa');
+ shell(`<main class="main"><div class="welcome"><div><div class="kicker">MODE SISWA</div><h2 class="h2">Halo, ${esc(S.student.name)} 👋</h2><p class="sub">${esc(S.student.class_label)} • Kode ${esc(S.student.class_code)}</p></div><div class="stat"><span>Progress</span><b>${done.size}/7</b></div></div><div class="grid2"><section class="card"><div class="section-head"><h3>Peta Misi</h3><span class="tag">${done.size}/7 selesai</span></div><div>${missions.map(m=>{const ok=done.has(m.id),open=m.id===1||done.has(m.id-1);return `<button class="mission ${ok?'done':''} ${open?'':'locked'}" onclick="${open?`mission(${m.id})`:'locked()'}"><div class="num">${m.id}</div><div><strong>Misi ${m.id} — ${esc(m.title)}</strong><small>${esc(m.sub)}</small></div><b>${ok?'✓':open?'→':'🔒'}</b></button>`}).join('')}</div></section><aside class="card"><div class="section-head"><h3>Alur Belajar</h3></div><div class="check"><div>1. Pelajari materi</div><div>2. Baca cerpen</div><div>3. Selesaikan Misi 1–7</div><div>4. Buat infografik digital</div><div>5. Presentasi & refleksi</div></div><button class="btn full" style="margin-top:14px" onclick="materials()">📚 Materi</button><button class="ghost full" style="margin-top:9px;background:#eaf2f8;color:#17365d" onclick="story()">📖 Baca Cerpen</button>${done.size===7?`<button class="btn full" style="margin-top:9px" onclick="presentation()">🎤 Presentasi Temuan</button>`:''}</aside></div></main>`,'Mode Siswa');
 }
 function locked(){alert('Selesaikan misi sebelumnya terlebih dahulu.');}
 async function materials(){
@@ -92,7 +92,86 @@ async function cloudRows(table){if(db){const {data,error}=await db.from(table).s
 async function saveProduct(){const title=document.getElementById('pt').value.trim(),url=document.getElementById('pu').value.trim(),note=document.getElementById('pn').value.trim();if(!title||!url)return alert('Judul produk dan link produk wajib diisi.');if(db){const {error}=await db.rpc('submit_product',{p_title:title,p_url:url,p_note:note});if(error)return alert('Gagal menyimpan produk: '+error.message);}else{let a=getLocal('md_products',[]),old=a.find(x=>x.student_id===S.student.id),row={id:old?.id||'p_'+Date.now(),student_id:S.student.id,class_id:S.student.class_id,class_code:S.student.class_code,student_name:S.student.name,title,url,note,status:'submitted'};a=old?a.map(x=>x.id===old.id?row:x):[...a,row];putLocal('md_products',a);}alert('Produk digital berhasil dikirim.');renderReflection();}
 async function renderReflection(){const rs=await cloudRows('reflections');const old=rs.find(x=>x.student_id===S.student.id);shell(`<main class="main"><div class="kicker">REFLEKSI</div><h2 class="h2">Bagaimana pengalaman belajarmu?</h2><p class="sub">Isi refleksi setelah menyelesaikan permainan.</p><section class="card"><div class="form"><label>Unsur yang paling saya pahami<textarea id="r1" rows="3">${esc(old?.r1||'')}</textarea></label><label>Unsur yang masih sulit<textarea id="r2" rows="3">${esc(old?.r2||'')}</textarea></label><label>Bukti teks membantu saya karena<textarea id="r3" rows="3">${esc(old?.r3||'')}</textarea></label><label>Peran saya dalam kelompok<textarea id="r4" rows="3">${esc(old?.r4||'')}</textarea></label><label>Bagian website yang paling membantu<textarea id="r5" rows="3">${esc(old?.r5||'')}</textarea></label><label>Kesulitan saat membuat produk digital<textarea id="r6" rows="3">${esc(old?.r6||'')}</textarea></label></div><button class="btn" onclick="saveReflection()">Kirim Refleksi</button></section></main>`,'Refleksi');}
 async function saveReflection(){const vals={r1:document.getElementById('r1').value,r2:document.getElementById('r2').value,r3:document.getElementById('r3').value,r4:document.getElementById('r4').value,r5:document.getElementById('r5').value,r6:document.getElementById('r6').value};if(db){const {error}=await db.rpc('submit_reflection',vals);if(error)return alert('Gagal menyimpan refleksi: '+error.message);}else{let a=getLocal('md_reflections',[]),old=a.find(x=>x.student_id===S.student.id),row={id:old?.id||'r_'+Date.now(),student_id:S.student.id,class_id:S.student.class_id,class_code:S.student.class_code,student_name:S.student.name,...vals};a=old?a.map(x=>x.id===old.id?row:x):[...a,row];putLocal('md_reflections',a);}alert('Refleksi tersimpan. Terima kasih!');renderStudent();}
+async function presentation(){
+  const answers = await studentAnswers();
 
+  if(!answers.length){
+    return alert('Belum ada temuan yang dapat dipresentasikan.');
+  }
+
+  const rows = answers.map((a,i)=>`
+    <article class="card" style="margin-bottom:12px">
+      <div class="kicker">MISI ${i+1}</div>
+
+      <h3>Temuan Analisis</h3>
+
+      <p>
+        <b>Unsur yang ditemukan:</b><br>
+        ${esc(a.answer || '-')}
+      </p>
+
+      <p>
+        <b>Kutipan/Bukti dari Cerpen:</b><br>
+        ${esc(a.evidence || '-')}
+      </p>
+
+      <p>
+        <b>Interpretasi:</b><br>
+        ${esc(a.reason || '-')}
+      </p>
+    </article>
+  `).join('');
+
+  shell(`
+    <main class="main narrow">
+
+      <section class="card">
+        <div class="kicker">TANTANGAN AKHIR</div>
+
+        <h2 class="h2">Presentasi Temuan Analisis Cerpen</h2>
+
+        <p class="sub">
+          Gunakan hasil Misi 1–7 untuk mempresentasikan
+          temuan analisis unsur intrinsik cerpen di kelas.
+        </p>
+
+        <div class="note">
+          <b>Dalam presentasi, jelaskan:</b>
+          <ol>
+            <li>Unsur intrinsik yang ditemukan.</li>
+            <li>Kutipan dari cerpen sebagai bukti.</li>
+            <li>Interpretasi berdasarkan kutipan tersebut.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section>
+        ${rows}
+      </section>
+
+      <section class="card">
+        <h3>Panduan Presentasi</h3>
+
+        <p>
+          Sampaikan hasil temuan secara runtut. Jelaskan unsur
+          intrinsik yang ditemukan, tunjukkan kutipan yang menjadi
+          bukti, kemudian jelaskan interpretasi terhadap kutipan tersebut.
+        </p>
+
+        <p>
+          Setelah selesai melakukan presentasi di kelas,
+          lanjutkan ke bagian refleksi pembelajaran.
+        </p>
+
+        <button class="btn full"
+                onclick="renderReflection()">
+          Lanjut ke Refleksi
+        </button>
+      </section>
+
+    </main>
+  `,'Presentasi Temuan');
+}
 function teacherLogin(){shell(`<main class="main narrow"><section class="card"><div class="kicker">MODE GURU</div><h2 class="h2">Dashboard Guru</h2><p class="sub">Gunakan email dan password untuk akun guru.</p><div class="form"><label>Email<input id="te" type="email" placeholder="guru@sekolah.sch.id"></label><label>Password<input id="tp" type="password" placeholder="••••••••"></label></div><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" onclick="teacherSignIn()">Masuk</button><button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="teacherSignUp()">Daftar akun guru</button></div><div class="note" style="margin-top:14px">Untuk mode demo tanpa Supabase, gunakan nama guru pada halaman demo. Untuk produksi, akun guru menggunakan Supabase Auth.</div></section></main>`,'Mode Guru');}
 async function teacherSignIn(){if(!db){const name=prompt('Nama Guru:','Guru Bahasa Indonesia');if(!name)return;S.role='teacher';S.teacherUser={id:'t_'+Date.now(),user_metadata:{name}};sessionStorage.setItem('role','teacher');sessionStorage.setItem('teacher',JSON.stringify(S.teacherUser));return teacherDash();}const email=document.getElementById('te').value.trim(),password=document.getElementById('tp').value;if(!email||!password)return alert('Email dan password wajib diisi.');const {data,error}=await db.auth.signInWithPassword({email,password});if(error)return alert('Login gagal: '+error.message);S.teacherUser=data.user;sessionStorage.setItem('role','teacher');sessionStorage.setItem('teacher',JSON.stringify(data.user));teacherDash();}
 async function teacherSignUp(){if(!db)return alert('Mode demo tidak memerlukan pendaftaran.');const email=document.getElementById('te').value.trim(),password=document.getElementById('tp').value,name=prompt('Nama Guru:','Guru Bahasa Indonesia');if(!email||!password||!name)return alert('Nama, email, dan password wajib diisi.');if(password.length<6)return alert('Gunakan password minimal 6 karakter.');const {data,error}=await db.auth.signUp({email,password,options:{data:{name}}});if(error)return alert('Pendaftaran gagal: '+error.message);alert('Akun dibuat. Jika project Supabase meminta verifikasi email, cek kotak masuk lalu login kembali.');}
