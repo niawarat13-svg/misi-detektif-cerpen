@@ -9,7 +9,7 @@ const lesson = {
   grade:'XI/F',
   material:'Analisis Unsur Intrinsik Cerpen',
   target:'Peserta Didik Kelas XI/F',
-  finalProduct:'Infografis Digital Analisis Cerpen'
+  finalProduct:'Presentasi Temuan Analisis Cerpen'
 };
 const missions = [
 {id:1,title:'Tema',sub:'Temukan Gagasan Utama',time:5,questions:['Apa tema yang tergambar dalam kutipan/cerita?','Masalah apa yang dialami Ayudia?','Bagaimana hubungan kutipan dengan keseluruhan cerita?','Tuliskan satu bukti lain yang mendukung tema.'],hint:'Perhatikan persoalan yang paling sering muncul dan perubahan tokoh.'},
