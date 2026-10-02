@@ -92,7 +92,53 @@ async function sendAnswer(id){
  if(db){const {error}=await db.rpc('submit_answer',{p_mission_no:id,p_mission_title:m.title,p_answer:answer,p_evidence:evidence,p_reason:reason,p_hint_used:false});if(error)return alert('Gagal menyimpan jawaban: '+error.message);} else {let a=getLocal('md_answers',[]),old=a.find(x=>x.student_id===S.student.id&&x.mission_no===id),row={id:old?.id||'a_'+Date.now(),student_id:S.student.id,class_id:S.student.class_id,class_code:S.student.class_code,student_name:S.student.name,mission_no:id,mission_title:m.title,answer,evidence,reason,score:old?.score??null,feedback:old?.feedback||'',status:'submitted',updated_at:new Date().toISOString()};a=old?a.map(x=>x.id===old.id?row:x):[...a,row];putLocal('md_answers',a);}
  alert(`Misi ${id} berhasil dikirim.`); id<7?renderStudent():renderResult();
 }
-async function renderResult(){const a=await studentAnswers();const total=a.reduce((s,x)=>s+(Number(x.score)||0),0);shell(`<main class="main"><div class="welcome"><div><div class="kicker">HASIL PERMAINAN</div><h2 class="h2">Misi selesai 🎉</h2><p class="sub">${esc(S.student.name)} • ${a.length}/7 misi terkirim</p></div><div class="stat"><span>Poin</span><b>${total}</b></div></div><section class="card"><h3>Tantangan Akhir</h3><p>Gunakan hasil tujuh misi untuk membuat <b>infografik digital</b> tentang unsur intrinsik cerpen.</p><button class="btn" onclick="finalProduct()">🎨 Lanjut ke Produk Digital</button></section></main>`,'Hasil');}
+async function renderResult(){
+  const a=await studentAnswers();
+  const total=a.reduce((s,x)=>s+(Number(x.score)||0),0);
+
+  shell(`
+    <main class="main">
+
+      <div class="welcome">
+        <div>
+          <div class="kicker">HASIL PERMAINAN</div>
+          <h2 class="h2">Misi selesai 🎉</h2>
+          <p class="sub">
+            ${esc(S.student.name)} • ${a.length}/7 misi terkirim
+          </p>
+        </div>
+
+        <div class="stat">
+          <span>Poin</span>
+          <b>${total}</b>
+        </div>
+      </div>
+
+      <section class="card">
+        <h3>Temuan Analisis</h3>
+
+        <p>
+          Seluruh Misi 1–7 telah selesai.
+          Gunakan hasil misi untuk mempresentasikan
+          temuan analisis unsur intrinsik cerpen.
+        </p>
+
+        <div class="check">
+          <div>✓ Identifikasi unsur intrinsik</div>
+          <div>✓ Bukti/kutipan dari cerpen</div>
+          <div>✓ Interpretasi hasil analisis</div>
+          <div>✓ Presentasi temuan</div>
+          <div>✓ Refleksi pembelajaran</div>
+        </div>
+
+        <button class="btn full" onclick="presentation()">
+          🎤 Presentasi Temuan
+        </button>
+      </section>
+
+    </main>
+  `,'Hasil');
+}
 async function finalProduct(){const old=(await cloudRows('products')).find(x=>x.student_id===S.student.id)||getLocal('md_products',[]).find(x=>x.student_id===S.student.id);shell(`<main class="main"><div class="kicker">TANTANGAN AKHIR</div><h2 class="h2">Buat Produk Digital</h2><p class="sub">Pindahkan hasil analisis dari tujuh misi ke Canva/PowerPoint.</p><div class="grid2"><section class="card"><h3>Isi wajib</h3><div class="check"><div>✓ Judul & pengarang</div><div>✓ Ringkasan</div><div>✓ Tema + bukti</div><div>✓ Alur + bukti</div><div>✓ Latar</div><div>✓ Tokoh & penokohan</div><div>✓ Sudut pandang</div><div>✓ Amanat</div><div>✓ Gaya bahasa + makna</div><div>✓ Kesimpulan</div></div></section><section class="card"><label>Judul Produk<input id="pt" value="${esc(old?.title||'Analisis Unsur Intrinsik Cerpen')}" /></label><label style="margin-top:12px">Link Canva/PowerPoint<input id="pu" value="${esc(old?.url||'')}" placeholder="https://..." /></label><label style="margin-top:12px">Catatan<textarea id="pn" rows="5">${esc(old?.note||'')}</textarea></label><button class="btn full" onclick="saveProduct()">Kirim Produk →</button></section></div></main>`,'Produk Digital');}
 async function cloudRows(table){if(db){const {data,error}=await db.from(table).select('*');if(error)throw error;return data||[];}return {products:getLocal('md_products',[]),reflections:getLocal('md_reflections',[]),classes:getLocal('md_classes',[]),students:getLocal('md_students',[]),answers:getLocal('md_answers',[]),materials:getLocal('md_materials',[])}[table]||[];}
 async function saveProduct(){const title=document.getElementById('pt').value.trim(),url=document.getElementById('pu').value.trim(),note=document.getElementById('pn').value.trim();if(!title||!url)return alert('Judul produk dan link produk wajib diisi.');if(db){const {error}=await db.rpc('submit_product',{p_title:title,p_url:url,p_note:note});if(error)return alert('Gagal menyimpan produk: '+error.message);}else{let a=getLocal('md_products',[]),old=a.find(x=>x.student_id===S.student.id),row={id:old?.id||'p_'+Date.now(),student_id:S.student.id,class_id:S.student.class_id,class_code:S.student.class_code,student_name:S.student.name,title,url,note,status:'submitted'};a=old?a.map(x=>x.id===old.id?row:x):[...a,row];putLocal('md_products',a);}alert('Produk digital berhasil dikirim.');renderReflection();}
