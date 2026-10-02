@@ -29,7 +29,13 @@ function putLocal(k,v){localStorage.setItem(k,JSON.stringify(v));}
 function shell(content,title=''){
   document.getElementById('app').innerHTML=`<div class="shell"><header class="top"><div class="brand" onclick="home()"><div class="logo">🔎</div><div><b>Misi Detektif</b><small>Unsur Intrinsik Cerpen</small></div></div><div class="top-actions">${title?`<span class="tag">${esc(title)}</span>`:''}<button class="ghost" onclick="home()">Beranda</button></div></header>${content}<footer class="footer">Game-Based Learning Bahasa Indonesia • Kelas XI/F</footer></div>`;
 }
-function home(){ if(db) db.auth.signOut().catch(()=>{}); S.role=null;S.teacherUser=null;S.student=null;sessionStorage.clear();renderHome(); }
+function home(){
+  S.role=null;
+  S.teacherUser=null;
+  S.student=null;
+  sessionStorage.clear();
+  renderHome();
+}
 function renderHome(){
  shell(`<main class="main"><div class="hero"><section class="panel"><div class="eyebrow">GAME-BASED LEARNING • WEBSITE</div><h1>CERPEN</h1><p class="lead">Cerdas Eksplorasi Rangkaian Peristiwa, Pahami Esensi & Nilai Cerita</p><div class="meta"><div><span>Materi</span><b>${lesson.material}</b></div><div><span>Sasaran</span><b>${lesson.target}</b></div></div><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" onclick="studentJoin()">🎒 Masuk sebagai Siswa</button><button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="teacherLogin()">🧑‍🏫 Masuk sebagai Guru</button></div><div class="note" style="margin-top:16px">${hasCloud?'☁️ Mode online: data disimpan di Supabase.':'🧪 Mode demo: data tersimpan di perangkat ini. Hubungkan Supabase untuk penggunaan lintas perangkat.'}</div></section><aside class="map-card"><div class="map-title">🗺️ Peta Misi</div>${missions.map((m,i)=>`<div class="step"><i>${i+1}</i><div><b>${esc(m.title)}</b><small>${esc(m.sub)}</small></div></div>`).join('')}</aside></div></main>`);
 }
