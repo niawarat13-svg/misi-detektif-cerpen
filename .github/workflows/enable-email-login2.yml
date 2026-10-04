@@ -1,0 +1,15 @@
+name: Enable email login test
+on: push
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sed -i '/app-cloud.js?v=20260929/a <script src="student-email-login.js?v=20261004"></script>' index.html
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || (git commit -m 'Enable student email login' && git push)
