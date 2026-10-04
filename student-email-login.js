@@ -1,2 +1,1 @@
-// Student email login override is prepared on this test branch.
-// It will be enabled after the main app file is updated safely.
+window.studentJoin=function(){shell('<main class="main narrow"><section class="card"><div class="kicker">MODE SISWA</div><h2 class="h2">Masuk ke Kelas</h2><p class="sub">Masukkan kode kelas, nama, dan email.</p><div class="form"><label>Kode Kelas<input id="code"></label><label>Nama Siswa<input id="name"></label><label>Email<input id="email" type="email"></label><label>Kelas<input id="cls" value="XI/F"></label></div><button class="btn full" onclick="joinStudent()">Masuk Kelas →</button></section></main>','Mode Siswa')};
