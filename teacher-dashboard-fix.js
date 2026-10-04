@@ -2,6 +2,7 @@
  * Separates student answers by student_id.
  * Uses students.name/email instead of the non-existent answers.student_name field.
  * Adds a robust student-selection handler that refreshes the answer panel and scrolls to it.
+ * E-Modul PDF is opened directly from the teacher material list and is not shown as a student product.
  */
 (function () {
   function teacherFixEscape(x = '') {
@@ -78,6 +79,16 @@
       return `<div class="row"><div><b>${teacherFixEscape(s?.name || 'Peserta')}</b><small>${teacherFixEscape(s?.email || '')}</small><small>${teacherFixEscape(x.r1 || '')}</small></div></div>`;
     }).join('');
 
+    const materialRows = materials.length
+      ? materials.sort((x,y)=>(x.order_number||0)-(y.order_number||0)).map((x,i) => {
+          const isPdf = x.material_type === 'pdf' || /e[- ]?modul/i.test(x.title || '');
+          const pdfButton = isPdf
+            ? `<a class="ghost" style="display:inline-block;background:#eaf2f8;color:#17365d;text-decoration:none;margin-right:6px" href="/E-Modul_Misi_Detektif_Unsur_Intrinsik_Cerpen.pdf" target="_blank" rel="noopener">Buka PDF ↗</a>`
+            : '';
+          return `<tr><td>${i+1}</td><td><b>${teacherFixEscape(x.title)}</b><br><small>${teacherFixEscape(x.description||'')}</small></td><td>${teacherFixEscape(materialTypeLabel(x.material_type))}</td><td>${x.is_published?'Terbit':'Draft'}</td><td>${pdfButton}<button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="editMaterial('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}')">Edit</button> <button class="ghost" style="background:#fdecec;color:#a33" onclick="deleteMaterial('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}')">Hapus</button></td></tr>`;
+        }).join('')
+      : '';
+
     shell(`<main class="main">
       <div class="kicker">KELAS</div>
       <h2 class="h2">${teacherFixEscape(cls.name || code)}</h2>
@@ -107,7 +118,7 @@
 
       <section class="card">
         <div class="section-head"><h3>📚 Materi Pembelajaran</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="addMaterial('${teacherFixEscape(code)}')">＋ Tambah Materi</button><button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="seedMaterials('${teacherFixEscape(code)}')">Isi Materi Awal</button></div></div>
-        ${materials.length ? `<div class="tablewrap"><table class="tbl"><thead><tr><th>No.</th><th>Materi</th><th>Jenis</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${materials.sort((x,y)=>(x.order_number||0)-(y.order_number||0)).map((x,i)=>`<tr><td>${i+1}</td><td><b>${teacherFixEscape(x.title)}</b><br><small>${teacherFixEscape(x.description||'')}</small></td><td>${teacherFixEscape(materialTypeLabel(x.material_type))}</td><td>${x.is_published?'Terbit':'Draft'}</td><td><button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="editMaterial('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}')">Edit</button> <button class="ghost" style="background:#fdecec;color:#a33" onclick="deleteMaterial('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}')">Hapus</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Belum ada materi.</div>'}
+        ${materials.length ? `<div class="tablewrap"><table class="tbl"><thead><tr><th>No.</th><th>Materi</th><th>Jenis</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${materialRows}</tbody></table></div>` : '<div class="empty">Belum ada materi.</div>'}
       </section>
 
       <section class="card">
