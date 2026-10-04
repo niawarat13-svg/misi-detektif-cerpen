@@ -14,10 +14,10 @@
     shell(`<main class="main narrow"><section class="card">
       <div class="kicker">MODE SISWA</div>
       <h2 class="h2">Masuk ke Kelas</h2>
-      <p class="sub">Masukkan kode kelas dan identitas siswa/kelompok.</p>
+      <p class="sub">Masukkan kode kelas dan identitas siswa.</p>
       <div class="form">
         <label>Kode Kelas<input id="code" placeholder="Contoh: JOS-JIS"></label>
-        <label>Nama Siswa/Kelompok<input id="name" placeholder="Contoh: Kelompok 1"></label>
+        <label>Nama Siswa<input id="name" placeholder="Contoh: Jekson"></label>
         <label>Email Siswa<input id="email" type="email" autocomplete="email" placeholder="contoh@email.com"></label>
         <label>Kelas<input id="cls" value="XI/F"></label>
       </div>
