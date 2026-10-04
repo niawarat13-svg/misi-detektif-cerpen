@@ -26,10 +26,9 @@
     const cls = cs.find(c => c.code === code);
     if (!cls) return alert('Kelas tidak ditemukan.');
 
-    const [st, an, pr, rf, mats] = await Promise.all([
+    const [st, an, rf, mats] = await Promise.all([
       cloudRows('students'),
       cloudRows('answers'),
-      cloudRows('products'),
       cloudRows('reflections'),
       cloudRows('materials')
     ]);
@@ -38,7 +37,6 @@
     const sameClass = x => x.class_id === classId || x.class_code === code;
     const students = st.filter(sameClass);
     const answers = an.filter(sameClass);
-    const products = pr.filter(sameClass);
     const reflections = rf.filter(sameClass);
     const materials = mats.filter(x => x.class_id === classId || x.class_code === code);
 
@@ -75,11 +73,6 @@
         </tr>`).join('')
       : `<tr><td colspan="6" class="empty">${selected ? 'Peserta ini belum mengirim jawaban.' : 'Pilih satu peserta untuk melihat jawaban Misi 1–7.'}</td></tr>`;
 
-    const productRows = products.map(x => {
-      const s = students.find(stu => stu.id === x.student_id);
-      return `<div class="row"><div><b>${teacherFixEscape(x.title)}</b><small>${teacherFixEscape(s?.name || 'Peserta')} ${s?.email ? '• ' + teacherFixEscape(s.email) : ''}</small></div><a class="ghost" style="background:#eaf2f8;color:#17365d;text-decoration:none" href="${teacherFixEscape(x.url)}" target="_blank">Buka ↗</a></div>`;
-    }).join('');
-
     const reflectionRows = reflections.map(x => {
       const s = students.find(stu => stu.id === x.student_id);
       return `<div class="row"><div><b>${teacherFixEscape(s?.name || 'Peserta')}</b><small>${teacherFixEscape(s?.email || '')}</small><small>${teacherFixEscape(x.r1 || '')}</small></div></div>`;
@@ -115,11 +108,6 @@
       <section class="card">
         <div class="section-head"><h3>📚 Materi Pembelajaran</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="addMaterial('${teacherFixEscape(code)}')">＋ Tambah Materi</button><button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="seedMaterials('${teacherFixEscape(code)}')">Isi Materi Awal</button></div></div>
         ${materials.length ? `<div class="tablewrap"><table class="tbl"><thead><tr><th>No.</th><th>Materi</th><th>Jenis</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${materials.sort((x,y)=>(x.order_number||0)-(y.order_number||0)).map((x,i)=>`<tr><td>${i+1}</td><td><b>${teacherFixEscape(x.title)}</b><br><small>${teacherFixEscape(x.description||'')}</small></td><td>${teacherFixEscape(materialTypeLabel(x.material_type))}</td><td>${x.is_published?'Terbit':'Draft'}</td><td><button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="editMaterial('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}')">Edit</button> <button class="ghost" style="background:#fdecec;color:#a33" onclick="deleteMaterial('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}')">Hapus</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Belum ada materi.</div>'}
-      </section>
-
-      <section class="card">
-        <div class="section-head"><h3>Produk Digital</h3></div>
-        ${productRows || '<div class="empty">Belum ada produk.</div>'}
       </section>
 
       <section class="card">
