@@ -1,0 +1,66 @@
+name: Patch student email login
+on:
+  push:
+    branches: [student-email-login-v2]
+    paths:
+      - '.github/workflows/patch-student-email.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update student login UI and RPC
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('app-cloud.js')
+          s = p.read_text(encoding='utf-8')
+          old = '''async function studentJoin(){
+ shell(`<main class="main narrow"><section class="card"><div class="kicker">MODE SISWA</div><h2 class="h2">Masuk ke Kelas</h2><p class="sub">Masukkan kode kelas dan identitas kelompok.</p><div class="form"><label>Kode Kelas<input id="code" placeholder="Contoh: XI01ABC"></label><label>Nama Siswa/Kelompok<input id="name" placeholder="Contoh: Kelompok 1"></label><label>Kelas<input id="cls" value="XI/F"></label></div><div class="note">${hasCloud?'Mode online: Anda akan masuk sebagai pengguna anonim dan data tersimpan di database.':'Mode demo: data akan tersimpan pada browser perangkat ini.'}</div><button class="btn full" onclick="joinStudent()">Masuk Kelas →</button></section></main>`,'Mode Siswa');
+}
+async function joinStudent(){
+ const code=document.getElementById('code').value.trim().toUpperCase(); const name=document.getElementById('name').value.trim(); const cls=document.getElementById('cls').value.trim()||'XI/F';
+ if(!code||!name)return alert('Kode kelas dan nama wajib diisi.');
+ if(db){
+   let auth = await db.auth.getSession();
+   if(!auth.data.session){ const {error}=await db.auth.signInAnonymously({options:{data:{display_name:name}}}); if(error)return alert('Gagal masuk sebagai siswa: '+error.message); }
+   const {data,error}=await db.rpc('join_class_by_code',{p_code:code,p_name:name,p_class_label:cls,p_group_name:name});
+   if(error)return alert('Kode kelas atau proses masuk bermasalah: '+error.message);
+   S.role='student'; S.student={id:data?.[0]?.student_id,class_id:data?.[0]?.class_id,class_code:data?.[0]?.class_code,name,group_name:name,class_label:cls};
+ } else {
+   let cs=getLocal('md_classes',[]), c=cs.find(x=>x.code===code); if(!c){c={id:'c_'+Date.now(),name:'Kelas Demo XI/F',code,teacher_name:'Guru Demo'};cs.push(c);putLocal('md_classes',cs);}
+   let st=getLocal('md_students',[]), s=st.find(x=>x.class_id===c.id&&x.name===name); if(!s){s={id:'s_'+Date.now(),class_id:c.id,class_code:code,name,group_name:name,class_label:cls};st.push(s);putLocal('md_students',st);} S.role='student';S.student=s;
+ }
+ sessionStorage.setItem('role','student');sessionStorage.setItem('student',JSON.stringify(S.student));renderStudent();
+}'''
+          new = '''async function studentJoin(){
+ shell(`<main class="main narrow"><section class="card"><div class="kicker">MODE SISWA</div><h2 class="h2">Masuk ke Kelas</h2><p class="sub">Masukkan kode kelas dan identitas pribadi.</p><div class="form"><label>Kode Kelas<input id="code" placeholder="Contoh: XI01ABC"></label><label>Nama Siswa<input id="name" placeholder="Contoh: Budi Santoso"></label><label>Email<input id="email" type="email" placeholder="contoh@email.com"></label><label>Kelas<input id="cls" value="XI/F"></label></div><div class="note">${hasCloud?'Mode online: email digunakan sebagai identitas siswa. Tidak ada password dan tidak ada OTP.':'Mode demo: data akan tersimpan pada browser perangkat ini.'}</div><button class="btn full" onclick="joinStudent()">Masuk Kelas →</button></section></main>`,'Mode Siswa');
+}
+async function joinStudent(){
+ const code=document.getElementById('code').value.trim().toUpperCase(); const name=document.getElementById('name').value.trim(); const email=document.getElementById('email').value.trim().toLowerCase(); const cls=document.getElementById('cls').value.trim()||'XI/F';
+ if(!code||!name||!email)return alert('Kode kelas, nama, dan email wajib diisi.');
+ if(!/^\\S+@\\S+\\.\\S+$/.test(email))return alert('Format email tidak valid.');
+ if(db){
+   let auth = await db.auth.getSession();
+   if(!auth.data.session){ const {error}=await db.auth.signInAnonymously({options:{data:{display_name:name,email}}}); if(error)return alert('Gagal masuk sebagai siswa: '+error.message); }
+   const {data,error}=await db.rpc('join_class_by_code',{p_code:code,p_email:email,p_name:name,p_class_label:cls,p_group_name:null});
+   if(error)return alert('Kode kelas atau proses masuk bermasalah: '+error.message);
+   S.role='student'; S.student={id:data?.[0]?.student_id,class_id:data?.[0]?.class_id,class_code:data?.[0]?.class_code,name:data?.[0]?.student_name||name,email:data?.[0]?.student_email||email,class_label:data?.[0]?.class_label||cls};
+ } else {
+   let cs=getLocal('md_classes',[]), c=cs.find(x=>x.code===code); if(!c){c={id:'c_'+Date.now(),name:'Kelas Demo XI/F',code,teacher_name:'Guru Demo'};cs.push(c);putLocal('md_classes',cs);}
+   let st=getLocal('md_students',[]), s=st.find(x=>x.class_id===c.id&&String(x.email||'').toLowerCase()===email); if(!s){s={id:'s_'+Date.now(),class_id:c.id,class_code:code,name,email,class_label:cls};st.push(s);putLocal('md_students',st);} else {s.name=name;s.class_label=cls;putLocal('md_students',st);} S.role='student';S.student=s;
+ }
+ sessionStorage.setItem('role','student');sessionStorage.setItem('student',JSON.stringify(S.student));renderStudent();
+}'''
+          if old not in s:
+              raise SystemExit('Target login block not found; no changes made.')
+          p.write_text(s.replace(old, new), encoding='utf-8')
+      - name: Commit patched app
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app-cloud.js
+          git commit -m 'Update student login to email identity'
+          git push
