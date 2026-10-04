@@ -1,6 +1,7 @@
 /* Teacher dashboard fix
  * Separates student answers by student_id.
  * Uses students.name/email instead of the non-existent answers.student_name field.
+ * Adds a robust student-selection handler that refreshes the answer panel and scrolls to it.
  */
 (function () {
   function teacherFixEscape(x = '') {
@@ -10,6 +11,15 @@
   }
 
   let selectedStudentId = null;
+
+  window.selectTeacherStudent = async function (code, studentId) {
+    selectedStudentId = studentId;
+    await window.teacherClass(code, studentId);
+    setTimeout(() => {
+      const panel = document.getElementById('teacher-answer-panel');
+      if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
 
   window.teacherClass = async function (code, studentId = null) {
     const cs = await teacherClasses();
@@ -41,7 +51,6 @@
     const studentRows = students.map(x => {
       const progress = new Set(answers.filter(a => a.student_id === x.id).map(a => a.mission_no)).size;
       const active = x.id === selectedStudentId;
-      const label = x.email ? `${x.name} — ${x.email}` : x.name;
       return `<div class="row" style="${active ? 'border:2px solid #2d6a9f;border-radius:12px;padding:10px;' : ''}">
         <div>
           <b>${teacherFixEscape(x.name)}</b>
@@ -50,7 +59,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <div class="bar"><i style="width:${progress / 7 * 100}%"></i></div>
-          <button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="teacherClass('${teacherFixEscape(code)}','${teacherFixEscape(x.id)}')">Lihat Jawaban</button>
+          <button type="button" class="ghost" style="background:#eaf2f8;color:#17365d" onclick="selectTeacherStudent('${teacherFixEscape(code)}','${teacherFixEscape(x.id)}')">Lihat Jawaban</button>
         </div>
       </div>`;
     }).join('');
@@ -62,7 +71,7 @@
           <td>${teacherFixEscape(x.evidence)}</td>
           <td>${teacherFixEscape(x.reason || '-')}</td>
           <td>${x.score ?? '-'}</td>
-          <td><button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="grade('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}','${teacherFixEscape(x.student_id)}')">Nilai</button></td>
+          <td><button type="button" class="ghost" style="background:#eaf2f8;color:#17365d" onclick="grade('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}','${teacherFixEscape(x.student_id)}')">Nilai</button></td>
         </tr>`).join('')
       : `<tr><td colspan="6" class="empty">${selected ? 'Peserta ini belum mengirim jawaban.' : 'Pilih satu peserta untuk melihat jawaban Misi 1–7.'}</td></tr>`;
 
@@ -89,13 +98,13 @@
         ${studentRows || '<div class="empty">Belum ada peserta.</div>'}
       </section>
 
-      <section class="card">
+      <section id="teacher-answer-panel" class="card">
         <div class="section-head">
           <div>
             <h3>Jawaban Misi</h3>
             <small class="sub">${selected ? `Menampilkan: <b>${teacherFixEscape(selected.name)}</b>${selected.email ? ` • ${teacherFixEscape(selected.email)}` : ''}` : 'Belum ada peserta yang dipilih.'}</small>
           </div>
-          <button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="teacherClass('${teacherFixEscape(code)}')">↻ Muat ulang</button>
+          <button type="button" class="ghost" style="background:#eaf2f8;color:#17365d" onclick="teacherClass('${teacherFixEscape(code)}', '${teacherFixEscape(selectedStudentId || '')}')">↻ Muat ulang</button>
         </div>
         <div class="tablewrap"><table class="tbl">
           <thead><tr><th>Misi</th><th>Jawaban</th><th>Bukti</th><th>Interpretasi</th><th>Poin</th><th>Aksi</th></tr></thead>
