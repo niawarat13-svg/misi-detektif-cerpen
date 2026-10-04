@@ -20,8 +20,8 @@
       r4:'',
       r5:document.getElementById('r5')?.value||''
     };
-    if(window.db){
-      var result=await window.db.rpc('submit_reflection',vals);
+    if(db){
+      var result=await db.rpc('submit_reflection',vals);
       if(result.error)return alert('Gagal menyimpan refleksi: '+result.error.message);
     }else{
       var a=getLocal('md_reflections',[]),old=a.find(function(x){return x.student_id===S.student.id;}),row={
