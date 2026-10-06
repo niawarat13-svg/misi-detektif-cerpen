@@ -2,7 +2,7 @@
  * Separates student answers by student_id.
  * Uses students.name/email instead of the non-existent answers.student_name field.
  * Adds a robust student-selection handler that refreshes the answer panel and scrolls to it.
- * E-Modul PDF is opened directly from the teacher material list and is not shown as a student product.
+ * E-Modul is opened as the teacher-only FlipHTML5 flipbook and is not shown as a student product.
  */
 (function () {
   function teacherFixEscape(x = '') {
@@ -81,11 +81,11 @@
 
     const materialRows = materials.length
       ? materials.sort((x,y)=>(x.order_number||0)-(y.order_number||0)).map((x,i) => {
-          const isPdf = x.material_type === 'pdf' || /e[- ]?modul/i.test(x.title || '');
-          const pdfButton = isPdf
-            ? `<a class="ghost" style="display:inline-block;background:#eaf2f8;color:#17365d;text-decoration:none;margin-right:6px" href="/E-Modul_Misi_Detektif_Unsur_Intrinsik_Cerpen.pdf" target="_blank" rel="noopener">Buka PDF ↗</a>`
+          const isEbook = /e[- ]?modul/i.test(x.title || '') || x.material_type === 'pdf';
+          const ebookButton = isEbook
+            ? `<a class="ghost" style="display:inline-block;background:#eaf2f8;color:#17365d;text-decoration:none;margin-right:6px" href="https://online.fliphtml5.com/coxld/efcp/" target="_blank" rel="noopener noreferrer">📖 Buka E-Modul ↗</a>`
             : '';
-          return `<tr><td>${i+1}</td><td><b>${teacherFixEscape(x.title)}</b><br><small>${teacherFixEscape(x.description||'')}</small></td><td>${teacherFixEscape(materialTypeLabel(x.material_type))}</td><td>${x.is_published?'Terbit':'Draft'}</td><td>${pdfButton}<button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="editMaterial('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}')">Edit</button> <button class="ghost" style="background:#fdecec;color:#a33" onclick="deleteMaterial('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}')">Hapus</button></td></tr>`;
+          return `<tr><td>${i+1}</td><td><b>${teacherFixEscape(x.title)}</b><br><small>${teacherFixEscape(x.description||'')}</small></td><td>${teacherFixEscape(materialTypeLabel(x.material_type))}</td><td>${x.is_published?'Terbit':'Draft'}</td><td>${ebookButton}<button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="editMaterial('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}')">Edit</button> <button class="ghost" style="background:#fdecec;color:#a33" onclick="deleteMaterial('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}')">Hapus</button></td></tr>`;
         }).join('')
       : '';
 
