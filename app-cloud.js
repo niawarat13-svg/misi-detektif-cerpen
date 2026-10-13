@@ -27,25 +27,25 @@ const S = { role:null, teacherUser:null, student:null };
 let studyAudioContext = null;
 let studyAudioNodes = [];
 let studyMusicOn = false;
-function toggleStudyMusic(){
+async function toggleStudyMusic(){
   const button = document.getElementById('studyMusicToggle');
-  const label = document.getElementById('studyMusicLabel');
   if(!studyMusicOn){
     try{
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if(!AudioCtx) throw new Error('Audio tidak didukung browser ini.');
+      if(!AudioCtx) throw new Error('Browser ini belum mendukung audio. Coba gunakan Chrome terbaru.');
       if(!studyAudioContext) studyAudioContext = new AudioCtx();
-      if(studyAudioContext.state === 'suspended') studyAudioContext.resume();
+      if(studyAudioContext.state !== 'running') await studyAudioContext.resume();
       if(!studyAudioNodes.length){
         const master = studyAudioContext.createGain();
         master.gain.value = 0.0001;
         master.connect(studyAudioContext.destination);
-        [220.00, 261.63, 329.63].forEach((frequency, index) => {
+        // Nada ambient lembut, dibuat langsung di browser tanpa file eksternal.
+        [[196.00,0.20],[246.94,0.13],[293.66,0.09]].forEach(([frequency, volume]) => {
           const oscillator = studyAudioContext.createOscillator();
           const toneGain = studyAudioContext.createGain();
           oscillator.type = 'sine';
-          oscillator.frequency.value = frequency;
-          toneGain.gain.value = [0.25, 0.17, 0.12][index];
+          oscillator.frequency.setValueAtTime(frequency, studyAudioContext.currentTime);
+          toneGain.gain.value = volume;
           oscillator.connect(toneGain);
           toneGain.connect(master);
           oscillator.start();
@@ -55,21 +55,27 @@ function toggleStudyMusic(){
       }
       const master = studyAudioNodes[studyAudioNodes.length - 1];
       master.gain.cancelScheduledValues(studyAudioContext.currentTime);
-      master.gain.setTargetAtTime(0.035, studyAudioContext.currentTime, 1.2);
+      master.gain.setTargetAtTime(0.18, studyAudioContext.currentTime, 0.7);
       studyMusicOn = true;
-      if(button) button.setAttribute('aria-pressed','true');
-      if(label) label.textContent = 'Musik: Nyala';
-      if(button) button.innerHTML = '♫ <span id="studyMusicLabel">Musik: Nyala</span>';
-    }catch(error){ alert(error.message || 'Musik latar belum dapat diputar.'); }
+      if(button){
+        button.setAttribute('aria-pressed','true');
+        button.innerHTML = '♫ <span id="studyMusicLabel">Musik: Nyala</span>';
+      }
+    }catch(error){
+      studyMusicOn = false;
+      alert(error.message || 'Musik belum dapat diputar. Periksa volume perangkat dan coba lagi.');
+    }
   } else {
     studyMusicOn = false;
     if(studyAudioContext && studyAudioNodes.length){
       const master = studyAudioNodes[studyAudioNodes.length - 1];
       master.gain.cancelScheduledValues(studyAudioContext.currentTime);
-      master.gain.setTargetAtTime(0.0001, studyAudioContext.currentTime, 0.25);
+      master.gain.setTargetAtTime(0.0001, studyAudioContext.currentTime, 0.18);
     }
-    if(button) button.setAttribute('aria-pressed','false');
-    if(button) button.innerHTML = '♫ <span id="studyMusicLabel">Musik: Mati</span>';
+    if(button){
+      button.setAttribute('aria-pressed','false');
+      button.innerHTML = '♫ <span id="studyMusicLabel">Musik: Mati</span>';
+    }
   }
 }
 
