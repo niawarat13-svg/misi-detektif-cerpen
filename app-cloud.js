@@ -23,39 +23,28 @@ const missions = [
 
 const S = { role:null, teacherUser:null, student:null };
 
-// Musik latar ambient lembut untuk menemani siswa belajar; diputar setelah tombol ditekan.
-let studyAudioContext = null;
-let studyAudioNodes = [];
+// Musik latar MP3 pilihan pengguna; diputar setelah tombol ditekan.
+let studyAudio = null;
 let studyMusicOn = false;
+const STUDY_MUSIC_URL = './musik-latar-misi-detektif.mp3';
 async function toggleStudyMusic(){
   const button = document.getElementById('studyMusicToggle');
   if(!studyMusicOn){
     try{
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if(!AudioCtx) throw new Error('Browser ini belum mendukung audio. Coba gunakan Chrome terbaru.');
-      if(!studyAudioContext) studyAudioContext = new AudioCtx();
-      if(studyAudioContext.state !== 'running') await studyAudioContext.resume();
-      if(!studyAudioNodes.length){
-        const master = studyAudioContext.createGain();
-        master.gain.value = 0.0001;
-        master.connect(studyAudioContext.destination);
-        // Nada ambient lembut, dibuat langsung di browser tanpa file eksternal.
-        [[196.00,0.20],[246.94,0.13],[293.66,0.09]].forEach(([frequency, volume]) => {
-          const oscillator = studyAudioContext.createOscillator();
-          const toneGain = studyAudioContext.createGain();
-          oscillator.type = 'sine';
-          oscillator.frequency.setValueAtTime(frequency, studyAudioContext.currentTime);
-          toneGain.gain.value = volume;
-          oscillator.connect(toneGain);
-          toneGain.connect(master);
-          oscillator.start();
-          studyAudioNodes.push(oscillator, toneGain);
+      if(!studyAudio){
+        studyAudio = new Audio(STUDY_MUSIC_URL);
+        studyAudio.loop = true;
+        studyAudio.preload = 'auto';
+        studyAudio.volume = 0.22;
+        studyAudio.addEventListener('error', () => {
+          studyMusicOn = false;
+          if(button){
+            button.setAttribute('aria-pressed','false');
+            button.innerHTML = '♫ <span id="studyMusicLabel">Musik: Mati</span>';
+          }
         });
-        studyAudioNodes.push(master);
       }
-      const master = studyAudioNodes[studyAudioNodes.length - 1];
-      master.gain.cancelScheduledValues(studyAudioContext.currentTime);
-      master.gain.setTargetAtTime(0.18, studyAudioContext.currentTime, 0.7);
+      await studyAudio.play();
       studyMusicOn = true;
       if(button){
         button.setAttribute('aria-pressed','true');
@@ -63,15 +52,11 @@ async function toggleStudyMusic(){
       }
     }catch(error){
       studyMusicOn = false;
-      alert(error.message || 'Musik belum dapat diputar. Periksa volume perangkat dan coba lagi.');
+      alert('Musik belum dapat diputar. Pastikan file musik tersedia dan volume perangkat aktif.');
     }
   } else {
     studyMusicOn = false;
-    if(studyAudioContext && studyAudioNodes.length){
-      const master = studyAudioNodes[studyAudioNodes.length - 1];
-      master.gain.cancelScheduledValues(studyAudioContext.currentTime);
-      master.gain.setTargetAtTime(0.0001, studyAudioContext.currentTime, 0.18);
-    }
+    if(studyAudio) studyAudio.pause();
     if(button){
       button.setAttribute('aria-pressed','false');
       button.innerHTML = '♫ <span id="studyMusicLabel">Musik: Mati</span>';
