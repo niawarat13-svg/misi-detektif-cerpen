@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://misidetektifcerpenonline.vercel.app/sitemap.xml
