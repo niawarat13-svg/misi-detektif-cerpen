@@ -23,6 +23,56 @@ const missions = [
 
 const S = { role:null, teacherUser:null, student:null };
 
+// Musik latar ambient lembut untuk menemani siswa belajar; diputar setelah tombol ditekan.
+let studyAudioContext = null;
+let studyAudioNodes = [];
+let studyMusicOn = false;
+function toggleStudyMusic(){
+  const button = document.getElementById('studyMusicToggle');
+  const label = document.getElementById('studyMusicLabel');
+  if(!studyMusicOn){
+    try{
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if(!AudioCtx) throw new Error('Audio tidak didukung browser ini.');
+      if(!studyAudioContext) studyAudioContext = new AudioCtx();
+      if(studyAudioContext.state === 'suspended') studyAudioContext.resume();
+      if(!studyAudioNodes.length){
+        const master = studyAudioContext.createGain();
+        master.gain.value = 0.0001;
+        master.connect(studyAudioContext.destination);
+        [220.00, 261.63, 329.63].forEach((frequency, index) => {
+          const oscillator = studyAudioContext.createOscillator();
+          const toneGain = studyAudioContext.createGain();
+          oscillator.type = 'sine';
+          oscillator.frequency.value = frequency;
+          toneGain.gain.value = [0.25, 0.17, 0.12][index];
+          oscillator.connect(toneGain);
+          toneGain.connect(master);
+          oscillator.start();
+          studyAudioNodes.push(oscillator, toneGain);
+        });
+        studyAudioNodes.push(master);
+      }
+      const master = studyAudioNodes[studyAudioNodes.length - 1];
+      master.gain.cancelScheduledValues(studyAudioContext.currentTime);
+      master.gain.setTargetAtTime(0.035, studyAudioContext.currentTime, 1.2);
+      studyMusicOn = true;
+      if(button) button.setAttribute('aria-pressed','true');
+      if(label) label.textContent = 'Musik: Nyala';
+      if(button) button.innerHTML = '♫ <span id="studyMusicLabel">Musik: Nyala</span>';
+    }catch(error){ alert(error.message || 'Musik latar belum dapat diputar.'); }
+  } else {
+    studyMusicOn = false;
+    if(studyAudioContext && studyAudioNodes.length){
+      const master = studyAudioNodes[studyAudioNodes.length - 1];
+      master.gain.cancelScheduledValues(studyAudioContext.currentTime);
+      master.gain.setTargetAtTime(0.0001, studyAudioContext.currentTime, 0.25);
+    }
+    if(button) button.setAttribute('aria-pressed','false');
+    if(button) button.innerHTML = '♫ <span id="studyMusicLabel">Musik: Mati</span>';
+  }
+}
+
 function esc(x=''){ return String(x).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function getLocal(k,d=[]){ try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d));}catch{return d;} }
 function putLocal(k,v){localStorage.setItem(k,JSON.stringify(v));}
@@ -65,7 +115,7 @@ async function studentAnswers(){
 }
 async function renderStudent(){
  const a=await studentAnswers(); const done=new Set(a.filter(x=>x.status==='submitted'||x.status==='reviewed').map(x=>x.mission_no));
- shell(`<main class="main"><div class="welcome"><div><div class="kicker">MODE SISWA</div><h2 class="h2">Halo, ${esc(S.student.name)} 👋</h2><p class="sub">${esc(S.student.class_label)} • Kode ${esc(S.student.class_code)}</p></div><div class="stat"><span>Progress</span><b>${done.size}/7</b></div></div><div class="grid2"><section class="card"><div class="section-head"><h3>Peta Misi</h3><span class="tag">${done.size}/7 selesai</span></div><div>${missions.map(m=>{const ok=done.has(m.id),open=m.id===1||done.has(m.id-1);return `<button class="mission ${ok?'done':''} ${open?'':'locked'}" onclick="${open?`mission(${m.id})`:'locked()'}"><div class="num">${m.id}</div><div><strong>Misi ${m.id} — ${esc(m.title)}</strong><small>${esc(m.sub)}</small></div><b>${ok?'✓':open?'→':'🔒'}</b></button>`}).join('')}</div></section><aside class="card"><div class="section-head"><h3>Alur Belajar</h3></div><div class="check"><div>1. Pelajari materi</div><div>2. Baca cerpen</div><div>3. Selesaikan Misi 1–7</div><div>4. Buat infografik digital</div><div>5. Presentasi & refleksi</div></div><button class="btn full" style="margin-top:14px" onclick="materials()">📚 Materi</button><button class="ghost full" style="margin-top:9px;background:#eaf2f8;color:#17365d" onclick="story()">📖 Baca Cerpen</button>${done.size===7?`<button class="btn full" style="margin-top:9px" onclick="presentation()">🎤 Presentasi Temuan</button>`:''}</aside></div></main>`,'Mode Siswa');
+ shell(`<main class="main"><div class="welcome"><div><div class="kicker">MODE SISWA</div><h2 class="h2">Halo, ${esc(S.student.name)} 👋</h2><p class="sub">${esc(S.student.class_label)} • Kode ${esc(S.student.class_code)}</p></div><div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap"><div class="stat"><span>Progress</span><b>${done.size}/7</b></div><button id="studyMusicToggle" class="ghost" aria-pressed="${studyMusicOn?'true':'false'}" onclick="toggleStudyMusic()" style="min-height:72px;padding:14px 18px;border:1px solid #d7e3ef;border-radius:18px;background:#fff;color:#17365d;font-weight:700;box-shadow:0 4px 14px rgba(23,54,93,.06)">♫ <span id="studyMusicLabel">Musik: ${studyMusicOn?'Nyala':'Mati'}</span></button></div></div><div class="grid2"><section class="card"><div class="section-head"><h3>Peta Misi</h3><span class="tag">${done.size}/7 selesai</span></div><div>${missions.map(m=>{const ok=done.has(m.id),open=m.id===1||done.has(m.id-1);return `<button class="mission ${ok?'done':''} ${open?'':'locked'}" onclick="${open?`mission(${m.id})`:'locked()'}"><div class="num">${m.id}</div><div><strong>Misi ${m.id} — ${esc(m.title)}</strong><small>${esc(m.sub)}</small></div><b>${ok?'✓':open?'→':'🔒'}</b></button>`}).join('')}</div></section><aside class="card"><div class="section-head"><h3>Alur Belajar</h3></div><div class="check"><div>1. Pelajari materi</div><div>2. Baca cerpen</div><div>3. Selesaikan Misi 1–7</div><div>4. Buat infografik digital</div><div>5. Presentasi & refleksi</div></div><button class="btn full" style="margin-top:14px" onclick="materials()">📚 Materi</button><button class="ghost full" style="margin-top:9px;background:#eaf2f8;color:#17365d" onclick="story()">📖 Baca Cerpen</button>${done.size===7?`<button class="btn full" style="margin-top:9px" onclick="presentation()">🎤 Presentasi Temuan</button>`:''}</aside></div></main>`,'Mode Siswa');
 }
 function locked(){alert('Selesaikan misi sebelumnya terlebih dahulu.');}
 async function materials(){
