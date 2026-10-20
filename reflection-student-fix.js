@@ -1,51 +1,73 @@
-// Refleksi Pembelajaran: tampilkan identitas siswa secara individual pada Dashboard Guru.
+// Refleksi Pembelajaran: tampilkan daftar nama terlebih dahulu, lalu refleksi siswa secara individual.
 (function(){
   const originalTeacherClass = window.teacherClass;
   if (typeof originalTeacherClass !== 'function') return;
 
   function e(x=''){
-    return String(x).replace(/[&<>\"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]));
+    return String(x).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+  function safeText(x=''){
+    return e(x).replace(/\n/g,'<br>');
   }
 
-  async function refreshReflectionIdentity(){
-    try {
-      const [reflections, students] = await Promise.all([
-        cloudRows('reflections'),
-        cloudRows('students')
-      ]);
+  window.openClassReflection = async function(id, code){
+    try{
+      const rows = await cloudRows('reflections');
+      const r = (rows || []).find(x => String(x.id) === String(id));
+      if(!r) return alert('Refleksi siswa tidak ditemukan.');
+      const name = r.student_name || 'Siswa';
+      const content = [
+        ['Unsur yang paling saya pahami', r.r1],
+        ['Unsur yang masih sulit', r.r2],
+        ['Bukti teks membantu saya karena', r.r3],
+        ['Bagian website yang paling membantu', r.r5]
+      ];
+      const details = content.map(([label, value]) =>
+        '<div style="padding:14px 0;border-bottom:1px solid #e2e8f0"><b>'+label+'</b><p style="margin:8px 0 0;line-height:1.6">'+safeText(value || 'Belum diisi')+'</p></div>'
+      ).join('');
+      const heading = document.querySelector('#app [data-reflection-heading]');
+      const section = heading ? heading.closest('section.card') : [...document.querySelectorAll('#app section.card')].find(s => (s.textContent||'').includes('Hasil Refleksi Kelas'));
+      if(!section) return alert('Bagian Hasil Refleksi Kelas tidak ditemukan.');
+      const body = section.querySelector('[data-reflection-body]');
+      if(body){
+        body.innerHTML = '<h4 style="margin:12px 0 4px">'+e(name)+'</h4>'+details+'<button class="ghost" style="margin-top:14px;background:#eaf2f8;color:#17365d" onclick="showClassReflectionList(\''+e(code)+'\')">← Kembali ke daftar siswa</button>';
+      }else{
+        section.innerHTML = '<div class="section-head"><h3>Hasil Refleksi Kelas</h3></div><h4>'+e(name)+'</h4>'+details+'<button class="ghost" style="margin-top:14px;background:#eaf2f8;color:#17365d" onclick="showClassReflectionList(\''+e(code)+'\')">← Kembali ke daftar siswa</button>';
+      }
+    }catch(err){console.error('openClassReflection:',err);alert('Refleksi belum dapat ditampilkan.');}
+  };
+
+  window.showClassReflectionList = async function(code){
+    await refreshReflectionIdentity(code);
+  };
+
+  async function refreshReflectionIdentity(code){
+    try{
+      const [reflections, students] = await Promise.all([cloudRows('reflections'),cloudRows('students')]);
       const byId = new Map((students || []).map(s => [s.id, s]));
+      const cls = (await teacherClasses()).find(c => c.code === code);
+      const filtered = (reflections || []).filter(r =>
+        (r.class_code && r.class_code === code) || (cls && r.class_id === cls.id) ||
+        (!r.class_code && !r.class_id && byId.get(r.student_id)?.class_code === code)
+      );
       const heading = [...document.querySelectorAll('#app h3')].find(h =>
         (h.textContent || '').trim().toLowerCase().includes('refleksi')
       );
       if (!heading) return;
       const section = heading.closest('section.card');
       if (!section) return;
-      const body = reflections.length ? reflections.map(r => {
+      const body = filtered.length ? filtered.map(r => {
         const s = byId.get(r.student_id) || {};
         const name = r.student_name || s.name || 'Siswa';
-        const email = r.student_email || s.email || '';
-        const cls = r.class_label || s.class_label || '';
-        return `<div class="row" style="display:block;padding:16px 0">
-          <div><b>${e(name)}</b></div>
-          <small style="display:block;margin-top:4px;color:#64748b">${e(email)}${cls ? ` • ${e(cls)}` : ''}</small>
-          <div style="margin-top:10px;line-height:1.6">
-            ${r.r1 ? `<p><b>Refleksi:</b> ${e(r.r1)}</p>` : ''}
-            ${r.r2 ? `<p><b>Pemahaman:</b> ${e(r.r2)}</p>` : ''}
-            ${r.r3 ? `<p><b>Kesulitan:</b> ${e(r.r3)}</p>` : ''}
-            ${r.r5 ? `<p><b>Catatan:</b> ${e(r.r5)}</p>` : ''}
-          </div>
-        </div>`;
-      }).join('') : '<div class="empty">Belum ada refleksi pembelajaran.</div>';
+        return '<div class="row"><div><b>'+e(name)+'</b><small>Refleksi pembelajaran telah dikirim</small></div><button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="openClassReflection(\''+e(r.id)+'\',\''+e(code)+'\')">Lihat Refleksi</button></div>';
+      }).join('') : '<div class="empty">Belum ada refleksi pembelajaran untuk kelas ini.</div>';
 
-      const existing = [...section.children].find(el => !el.classList.contains('section-head'));
-      if (existing) existing.outerHTML = body;
-    } catch (err) {
-      console.error('reflection-student-fix:', err);
-    }
+      section.innerHTML = '<div class="section-head"><div><h3>Hasil Refleksi Kelas</h3><small class="sub">Pilih nama siswa untuk membaca refleksinya.</small></div><button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="showClassReflectionList(\''+e(code)+'\')">↻ Muat ulang</button></div><div data-reflection-body>'+body+'</div>';
+    }catch(err){console.error('reflection-student-fix:',err);}
   }
 
   window.teacherClass = async function(code){
     await originalTeacherClass(code);
-    await refreshReflectionIdentity();
+    await refreshReflectionIdentity(code);
   };
 })();
