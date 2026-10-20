@@ -360,9 +360,64 @@ async function presentation(){
   `,'Presentasi Temuan');
 }
 function teacherLogin(){shell(`<main class="main narrow"><section class="card"><div class="kicker">MODE GURU</div><h2 class="h2">Dashboard Guru</h2><p class="sub">Gunakan email dan password untuk akun guru.</p><div class="form"><label>Email<input id="te" type="email" placeholder="guru@sekolah.sch.id"></label><label>Password<input id="tp" type="password" placeholder="••••••••"></label></div><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" onclick="teacherSignIn()">Masuk</button><button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="teacherSignUp()">Daftar akun guru</button></div><div class="note" style="margin-top:14px">Untuk mode demo tanpa Supabase, gunakan nama guru pada halaman demo. Untuk produksi, akun guru menggunakan Supabase Auth.</div></section></main>`,'Mode Guru');}
-async function teacherSignIn(){if(!db){const name=prompt('Nama Guru:','Guru Bahasa Indonesia');if(!name)return;S.role='teacher';S.teacherUser={id:'t_'+Date.now(),user_metadata:{name}};sessionStorage.setItem('role','teacher');sessionStorage.setItem('teacher',JSON.stringify(S.teacherUser));return teacherDash();}const email=document.getElementById('te').value.trim(),password=document.getElementById('tp').value;if(!email||!password)return alert('Email dan password wajib diisi.');const {data,error}=await db.auth.signInWithPassword({email,password});if(error)return alert('Login gagal: '+error.message);S.teacherUser=data.user;sessionStorage.setItem('role','teacher');sessionStorage.setItem('teacher',JSON.stringify(data.user));teacherDash();}
-async function teacherSignUp(){if(!db)return alert('Mode demo tidak memerlukan pendaftaran.');const email=document.getElementById('te').value.trim(),password=document.getElementById('tp').value,name=prompt('Nama Guru:','Guru Bahasa Indonesia');if(!email||!password||!name)return alert('Nama, email, dan password wajib diisi.');if(password.length<6)return alert('Gunakan password minimal 6 karakter.');const {data,error}=await db.auth.signUp({email,password,options:{data:{name}}});if(error)return alert('Pendaftaran gagal: '+error.message);alert('Akun dibuat. Jika project Supabase meminta verifikasi email, cek kotak masuk lalu login kembali.');}
-async function teacherDash(){const classes=await teacherClasses();const students=await cloudRows('students');const answers=await cloudRows('answers');const products=await cloudRows('products');shell(`<main class="main"><div class="welcome"><div><div class="kicker">MODE GURU</div><h2 class="h2">Dashboard Pembelajaran</h2><p class="sub">Kelola kelas dan pantau tujuh misi.</p></div><button class="btn" onclick="createClass()">＋ Buat Kelas</button></div><div class="stats"><div class="stat"><span>Kelas</span><b>${classes.length}</b></div><div class="stat"><span>Peserta</span><b>${students.length}</b></div><div class="stat"><span>Jawaban</span><b>${answers.length}</b></div><div class="stat"><span>Produk</span><b>${products.length}</b></div></div><section class="card"><div class="section-head"><h3>Kelas</h3><span class="tag">Guru: ${esc(S.teacherUser?.user_metadata?.name||S.teacherUser?.name||'')}</span></div>${classes.length?classes.map(c=>`<div class="row"><div><b>${esc(c.name)}</b><small>Kode: ${esc(c.code)}</small></div><button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="teacherClass('${esc(c.code)}')">Kelola →</button></div>`).join(''):'<div class="empty">Belum ada kelas.</div>'}</section></main>`,'Dashboard Guru');}
+async function teacherSignIn(){
+ if(!db){const name=prompt('Nama Guru:','Guru Bahasa Indonesia');if(!name)return;S.role='teacher';S.teacherUser={id:'t_'+Date.now(),user_metadata:{name}};sessionStorage.setItem('role','teacher');sessionStorage.setItem('teacher',JSON.stringify(S.teacherUser));return teacherDash();}
+ const email=document.getElementById('te').value.trim(),password=document.getElementById('tp').value;
+ if(!email||!password)return alert('Email dan password wajib diisi.');
+ const {data,error}=await db.auth.signInWithPassword({email,password});
+ if(error)return alert('Login gagal: '+error.message);
+ const access=await db.rpc('ensure_teacher_access_request');
+ if(access.error){await db.auth.signOut();return alert('Status akun guru belum dapat diperiksa. Silakan coba lagi atau hubungi pemilik website.');}
+ const status=access.data?.[0]?.status;
+ if(status!=='approved'){
+   await db.auth.signOut();
+   sessionStorage.removeItem('role');sessionStorage.removeItem('teacher');
+   return alert(status==='rejected'?'Permintaan akun guru Anda ditolak. Hubungi pemilik website.':'Pendaftaran berhasil, tetapi akun masih menunggu persetujuan pemilik website.');
+ }
+ S.teacherUser=data.user;sessionStorage.setItem('role','teacher');sessionStorage.setItem('teacher',JSON.stringify(data.user));return teacherDash();
+}
+async function teacherSignUp(){
+ if(!db)return alert('Mode demo tidak memerlukan pendaftaran.');
+ const email=document.getElementById('te').value.trim(),password=document.getElementById('tp').value,name=prompt('Nama Guru:','Guru Bahasa Indonesia');
+ if(!email||!password||!name)return alert('Nama, email, dan password wajib diisi.');
+ if(password.length<6)return alert('Gunakan password minimal 6 karakter.');
+ const {data,error}=await db.auth.signUp({email,password,options:{data:{name}}});
+ if(error)return alert('Pendaftaran gagal: '+error.message);
+ if(data.session){
+   const req=await db.rpc('ensure_teacher_access_request');
+   if(req.error)return alert('Akun dibuat, tetapi permintaan persetujuan belum terkirim. Silakan masuk kembali.');
+ }
+ alert('Pendaftaran diterima. Akun guru harus disetujui pemilik website sebelum dapat membuka dashboard. Jika diminta verifikasi email, verifikasi terlebih dahulu lalu masuk kembali.');
+}
+async function reviewTeacherRequest(userId,status){
+ const label=status==='approved'?'menyetujui':'menolak';
+ if(!confirm('Apakah Anda yakin ingin '+label+' akun guru ini?'))return;
+ const {error}=await db.rpc('review_teacher_access_request',{p_user_id:userId,p_status:status});
+ if(error)return alert('Gagal memproses permintaan: '+error.message);
+ alert(status==='approved'?'Akun guru disetujui.':'Permintaan akun guru ditolak.');
+ return teacherDash();
+}
+async function teacherDash(){
+ if(db){
+   const access=await db.rpc('ensure_teacher_access_request');
+   if(access.error){await db.auth.signOut();sessionStorage.removeItem('role');sessionStorage.removeItem('teacher');return alert('Status akun guru tidak dapat diverifikasi. Silakan masuk kembali.');}
+   const status=access.data?.[0]?.status,isOwner=access.data?.[0]?.is_owner===true;
+   if(status!=='approved'){await db.auth.signOut();sessionStorage.removeItem('role');sessionStorage.removeItem('teacher');return alert(status==='rejected'?'Akun guru Anda ditolak.':'Akun guru masih menunggu persetujuan pemilik website.');}
+   window.__misiTeacherIsOwner=isOwner;
+ }
+ const classes=await teacherClasses();const students=await cloudRows('students');const answers=await cloudRows('answers');const products=await cloudRows('products');
+ let approvalHtml='';
+ if(db&&window.__misiTeacherIsOwner){
+   const req=await db.rpc('list_teacher_access_requests');
+   if(req.error){approvalHtml='<section class="card"><h3>Permintaan Akun Guru</h3><p class="sub">Daftar permintaan belum dapat dimuat.</p></section>';}
+   else{
+     const rows=req.data||[];
+     approvalHtml='<section class="card"><div class="section-head"><h3>Persetujuan Akun Guru</h3><span class="tag">'+rows.length+' menunggu</span></div>'+
+       (rows.length?rows.map(x=>'<div class="row"><div><b>'+esc(x.display_name||'Guru')+'</b><small>'+esc(x.email||'Email tidak tersedia')+'</small></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="reviewTeacherRequest(\''+esc(x.user_id)+'\',\'approved\')">Setujui</button><button class="ghost" style="background:#fdecec;color:#a33" onclick="reviewTeacherRequest(\''+esc(x.user_id)+'\',\'rejected\')">Tolak</button></div></div>').join(''):'<div class="empty">Belum ada permintaan akun guru.</div>')+'</section>';
+   }
+ }
+ shell('<main class="main">'+approvalHtml+'<div class="welcome"><div><div class="kicker">MODE GURU</div><h2 class="h2">Dashboard Pembelajaran</h2><p class="sub">Kelola kelas dan pantau tujuh misi.</p></div><button class="btn" onclick="createClass()">＋ Buat Kelas</button></div><div class="stats"><div class="stat"><span>Kelas</span><b>'+classes.length+'</b></div><div class="stat"><span>Peserta</span><b>'+students.length+'</b></div><div class="stat"><span>Jawaban</span><b>'+answers.length+'</b></div><div class="stat"><span>Produk</span><b>'+products.length+'</b></div></div><section class="card"><div class="section-head"><h3>Kelas</h3><span class="tag">Guru: '+esc(S.teacherUser?.user_metadata?.name||S.teacherUser?.name||'')+'</span></div>'+(classes.length?classes.map(c=>'<div class="row"><div><b>'+esc(c.name)+'</b><small>Kode: '+esc(c.code)+'</small></div><button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="teacherClass(\''+esc(c.code)+'\')">Kelola →</button></div>').join(''):'<div class="empty">Belum ada kelas.</div>')+'</section></main>','Dashboard Guru');
+}
 async function teacherClasses(){if(db){const {data,error}=await db.from('classes').select('*').order('created_at',{ascending:false});if(error)throw error;return data||[];}return getLocal('md_classes',[]);}
 async function createClass(){const name=prompt('Nama kelas:','Bahasa Indonesia XI/F — Cerpen');if(!name)return;const code=(prompt('Kode kelas:','XI'+Math.random().toString(36).slice(2,6).toUpperCase())||'').trim().toUpperCase();if(!code)return;if(db){const {error}=await db.from('classes').insert({name,code,teacher_id:S.teacherUser.id});if(error)return alert('Gagal membuat kelas: '+error.message);}else{let cs=getLocal('md_classes',[]);cs.push({id:'c_'+Date.now(),name,code,teacher_name:S.teacherUser?.name||'Guru'});putLocal('md_classes',cs);}alert('Kelas dibuat. Kode: '+code);teacherDash();}
 
