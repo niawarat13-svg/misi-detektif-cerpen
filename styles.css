@@ -20,3 +20,8 @@
   .school-logo{width:52px;height:52px;flex-basis:52px;border-radius:6px}
   .top .ghost{padding:10px 12px;font-size:14px}
 }
+
+
+.school-name{color:#fff;font-size:24px;font-weight:800;line-height:1.1;white-space:nowrap;letter-spacing:.2px}
+@media(max-width:900px){.school-name{font-size:18px}}
+@media(max-width:640px){.school-name{font-size:12px;white-space:normal;max-width:120px;text-align:right}.top-actions{gap:8px}}
