@@ -5,3 +5,18 @@
 
 .story-wrap{max-width:980px}.story-top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:14px}.story-tools{display:flex;gap:8px;flex-wrap:wrap}.story-note{background:#fff9df;border-left:4px solid var(--orange);padding:13px 15px;border-radius:9px;margin:12px 0 18px;color:#65571c;line-height:1.5}.story-text{font-family:Georgia,'Times New Roman',serif;font-size:17px;line-height:1.85;letter-spacing:.01em;color:var(--ink)}.story-text p{margin:0 0 11px;color:var(--ink)}.story-bottom{display:flex;justify-content:space-between;gap:12px;margin-top:16px}@media(max-width:620px){.story-top{align-items:flex-start;flex-direction:column}.story-bottom{flex-direction:column}}@media print{.top,.footer,.story-tools,.story-bottom,.story-note{display:none!important}.story-wrap{margin:0!important;padding:0!important;max-width:none!important}.story-text{box-shadow:none!important;border:0!important}}
 .material-content{margin-top:18px;background:#f8fafc;border:1px solid var(--border);border-radius:14px;padding:20px;line-height:1.75;color:var(--ink)}
+
+
+/* Header logo and navigation responsive sizing */
+.top-actions{flex-shrink:0;min-width:0}
+.school-logo{display:block;width:64px;height:64px;flex:0 0 64px;object-fit:contain;background:#fff;border:3px solid #fff;border-radius:14px;padding:2px}
+.top .ghost{white-space:nowrap;flex-shrink:0}
+@media(max-width:640px){
+  .top{height:auto;min-height:72px;padding:10px 12px;gap:10px}
+  .brand{min-width:0;gap:7px}
+  .brand b{font-size:16px}
+  .brand small{font-size:12px}
+  .top-actions{gap:6px}
+  .school-logo{width:52px;height:52px;flex-basis:52px;border-radius:11px}
+  .top .ghost{padding:10px 12px;font-size:14px}
+}
