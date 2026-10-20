@@ -144,7 +144,7 @@ async function mission(id){
      <button class="btn" type="button" onclick="continueToEssay(${id})">Lanjut ke Esai →</button>
    </section>
    <section id="essayStage" style="display:none">
-     <div class="quote"><b>Tahap 2 • Analisis Esai</b><p>Gunakan pemahamanmu untuk menganalisis cerpen. Sertakan bukti teks dan alasan yang mendukung jawaban.</p><p><b>Fokus misi:</b> ${m.questions.join(' • ')}</p></div>
+     <div id="mcqFeedback" class="mcq-feedback" role="status" aria-live="polite"></div><div class="quote"><b>Tahap 2 • Analisis Esai</b><p>Gunakan pemahamanmu untuk menganalisis cerpen. Sertakan bukti teks dan alasan yang mendukung jawaban.</p><p><b>Fokus misi:</b> ${m.questions.join(' • ')}</p></div>
      <input type="hidden" id="mcqSelected" value="${esc(old.mcq_answer||'')}">
      <input type="hidden" id="mcqScore" value="${old.mcq_score??0}">
      <div class="form"><label>Unsur / Jawaban<textarea id="ans" rows="4">${esc(old.answer||'')}</textarea></label><label>Bukti Teks<textarea id="evi" rows="5">${esc(old.evidence||'')}</textarea></label><label>Alasan / Interpretasi<textarea id="rea" rows="5">${esc(old.reason||'')}</textarea></label></div>
