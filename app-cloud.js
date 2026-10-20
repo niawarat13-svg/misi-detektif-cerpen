@@ -170,10 +170,19 @@ function backToMCQ(){
 function hint(text){alert('💡 HINT\n\n'+text+'\n\nGunakan sebagai petunjuk, bukan sebagai jawaban langsung.');}
 async function sendAnswer(id){
  const answer=document.getElementById('ans').value.trim(), evidence=document.getElementById('evi').value.trim(), reason=document.getElementById('rea').value.trim();
+ const mcqAnswer=document.getElementById('mcqSelected').value.trim(), mcqScore=Number(document.getElementById('mcqScore').value)||0;
+ if(!mcqAnswer)return alert('Selesaikan pilihan ganda terlebih dahulu.');
  if(!answer||!evidence||!reason)return alert('Isi unsur, bukti teks, dan alasan/interpretasi terlebih dahulu.');
  const m=missions.find(x=>x.id===id);
- if(db){const {error}=await db.rpc('submit_answer',{p_mission_no:id,p_mission_title:m.title,p_answer:answer,p_evidence:evidence,p_reason:reason,p_hint_used:false});if(error)return alert('Gagal menyimpan jawaban: '+error.message);} else {let a=getLocal('md_answers',[]),old=a.find(x=>x.student_id===S.student.id&&x.mission_no===id),row={id:old?.id||'a_'+Date.now(),student_id:S.student.id,class_id:S.student.class_id,class_code:S.student.class_code,student_name:S.student.name,mission_no:id,mission_title:m.title,answer,evidence,reason,score:old?.score??null,feedback:old?.feedback||'',status:'submitted',updated_at:new Date().toISOString()};a=old?a.map(x=>x.id===old.id?row:x):[...a,row];putLocal('md_answers',a);}
- alert(`Misi ${id} berhasil dikirim.`); id<7?renderStudent():renderResult();
+ if(db){
+   const {error}=await db.rpc('submit_answer',{p_mission_no:id,p_mission_title:m.title,p_answer:answer,p_evidence:evidence,p_reason:reason,p_hint_used:false,p_mcq_answer:mcqAnswer,p_mcq_score:mcqScore});
+   if(error)return alert('Gagal menyimpan jawaban: '+error.message);
+ } else {
+   let a=getLocal('md_answers',[]),old=a.find(x=>x.student_id===S.student.id&&x.mission_no===id),row={id:old?.id||'a_'+Date.now(),student_id:S.student.id,class_id:S.student.class_id,class_code:S.student.class_code,student_name:S.student.name,mission_no:id,mission_title:m.title,answer,evidence,reason,mcq_answer:mcqAnswer,mcq_score:mcqScore,score:old?.score??null,feedback:old?.feedback||'',status:'submitted',updated_at:new Date().toISOString()};
+   a=old?a.map(x=>x.id===old.id?row:x):[...a,row];putLocal('md_answers',a);
+ }
+ alert('Misi '+id+' berhasil dikirim. Hasil PG: '+(mcqScore===1?'Benar':'Belum tepat')+'.');
+ id<7?renderStudent():renderResult();
 }
 async function renderResult(){
   const a=await studentAnswers();
