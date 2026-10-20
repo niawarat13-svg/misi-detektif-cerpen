@@ -22,6 +22,14 @@ const missions = [
 ];
 
 const mcqQuestions = {
+  1:{question:"Unsur intrinsik apa yang paling tepat untuk gagasan utama tentang rasa syukur dalam perjalanan Ayudia?",options:[["A","Alur"],["B","Tema"],["C","Latar"],["D","Amanat"]],correct:"B",explanation:"Unsur yang dimaksud adalah Tema. Tentukan berdasarkan fungsi kutipan dalam cerita.",feedback:{"A":"Alur berkaitan dengan urutan peristiwa, bukan gagasan utama cerita.","B":"Benar. Gagasan utama tentang rasa syukur merupakan tema cerita.","C":"Latar menjelaskan tempat, waktu, dan suasana peristiwa.","D":"Amanat adalah pesan yang dapat dipetik pembaca."}},
+  2:{question:"Unsur intrinsik apa yang ditunjukkan oleh rangkaian peristiwa yang dialami Ayudia?",options:[["A","Alur"],["B","Tema"],["C","Latar"],["D","Amanat"]],correct:"A",explanation:"Unsur yang dimaksud adalah Alur. Tentukan berdasarkan fungsi kutipan dalam cerita.",feedback:{"A":"Benar. Rangkaian dan hubungan peristiwa merupakan unsur alur.","B":"Tema merupakan gagasan pokok, bukan urutan kejadian.","C":"Latar berkaitan dengan tempat, waktu, dan suasana.","D":"Amanat merupakan pesan atau pelajaran dari cerita."}},
+  3:{question:"Unsur intrinsik apa yang berkaitan dengan petunjuk jam 8, desa Teja, dan perjalanan menggunakan kapal?",options:[["A","Tokoh dan penokohan"],["B","Latar"],["C","Gaya bahasa"],["D","Amanat"]],correct:"B",explanation:"Unsur yang dimaksud adalah Latar. Tentukan berdasarkan fungsi kutipan dalam cerita.",feedback:{"A":"Tokoh dan penokohan membahas tokoh serta wataknya.","B":"Benar. Waktu dan tempat perjalanan termasuk latar.","C":"Gaya bahasa membahas cara khas penggunaan bahasa.","D":"Amanat merupakan pesan yang dapat disimpulkan."}},
+  4:{question:"Unsur intrinsik apa yang dikaji saat menyimpulkan watak Ayudia dari tindakannya mengajar anak-anak?",options:[["A","Tokoh dan penokohan"],["B","Sudut pandang"],["C","Latar"],["D","Alur"]],correct:"A",explanation:"Unsur yang dimaksud adalah Tokoh dan penokohan. Tentukan berdasarkan fungsi kutipan dalam cerita.",feedback:{"A":"Benar. Penokohan dikaji melalui tindakan, dialog, pikiran, dan reaksi tokoh.","B":"Sudut pandang berkaitan dengan posisi pencerita.","C":"Latar menunjukkan tempat, waktu, dan suasana.","D":"Alur merupakan rangkaian peristiwa."}},
+  5:{question:"Unsur intrinsik apa yang berkaitan dengan cara cerita disampaikan dan posisi pencerita?",options:[["A","Sudut pandang"],["B","Tema"],["C","Amanat"],["D","Tokoh dan penokohan"]],correct:"A",explanation:"Unsur yang dimaksud adalah Sudut pandang. Tentukan berdasarkan fungsi kutipan dalam cerita.",feedback:{"A":"Benar. Sudut pandang berkaitan dengan posisi atau cara pencerita menyampaikan kisah.","B":"Tema adalah gagasan pokok cerita.","C":"Amanat adalah pesan yang dapat dipetik.","D":"Tokoh dan penokohan berkaitan dengan pelaku dan wataknya."}},
+  6:{question:"Unsur intrinsik apa yang dikaji saat menyimpulkan pesan dari akhir cerita?",options:[["A","Amanat"],["B","Alur"],["C","Latar"],["D","Gaya bahasa"]],correct:"A",explanation:"Unsur yang dimaksud adalah Amanat. Tentukan berdasarkan fungsi kutipan dalam cerita.",feedback:{"A":"Benar. Amanat adalah pesan atau pelajaran dari peristiwa cerita.","B":"Alur adalah rangkaian peristiwa.","C":"Latar berkaitan dengan tempat, waktu, dan suasana.","D":"Gaya bahasa berkaitan dengan penggunaan bahasa atau majas."}},
+  7:{question:"Unsur intrinsik apa yang dikaji pada perbandingan pikiran Ayudia dengan suara klakson menggunakan kata bagaikan?",options:[["A","Gaya bahasa"],["B","Tokoh dan penokohan"],["C","Sudut pandang"],["D","Amanat"]],correct:"A",explanation:"Unsur yang dimaksud adalah Gaya bahasa. Tentukan berdasarkan fungsi kutipan dalam cerita.",feedback:{"A":"Benar. Perumpamaan dengan kata bagaikan termasuk pembahasan gaya bahasa.","B":"Tokoh dan penokohan berkaitan dengan pelaku serta wataknya.","C":"Sudut pandang berkaitan dengan posisi pencerita.","D":"Amanat adalah pesan cerita, bukan teknik perbandingan bahasa."}},
+
   1:{quote:'“Setiap kali dia merasa hal yang dilakukannya buruk dan tak ada kebahagiaan apapun, ia selalu mengingat bahwa kunci dari semuanya adalah bersyukur.”',question:'Berdasarkan kutipan akhir cerpen, gagasan utama yang paling sesuai dengan perjalanan Ayudia adalah ....',options:[['A','Keberhasilan seseorang hanya ditentukan oleh nilai ujian'],['B','Rasa syukur dapat membantu seseorang memaknai hidup dan menemukan kebahagiaan'],['C','Kegiatan liburan sebaiknya hanya dilakukan bersama teman dekat'],['D','Masalah keluarga selalu dapat diselesaikan dengan menghindari orang lain']],correct:'B',explanation:'Tema adalah gagasan pokok yang mengikat keseluruhan cerita. Kutipan akhir menegaskan rasa syukur, sedangkan pengalaman Ayudia—mulai dari mengurung diri hingga membantu anak-anak dan menyadari hal yang masih ia miliki—mendukung tema tentang belajar bersyukur.',feedback:{A:'Kutipan tidak membahas nilai ujian sebagai penentu kebahagiaan. Ujian hanya menjadi bagian awal latar pengalaman Ayudia.',B:'Benar. Kutipan akhir menyebut bersyukur sebagai kunci ketika Ayudia merasa tidak bahagia, sejalan dengan perubahan yang dialaminya.',C:'Kegiatan liburan bukan gagasan utama kutipan. Perjalanan relawan menjadi pengalaman yang membantu Ayudia berubah.',D:'Ayudia justru mulai membuka diri dan berbicara dengan Altha. Menghindari orang lain bukan pesan utama cerita.'}},
   2:{quote:'Ayudia awalnya mengurung diri di kamar. Kemudian ia menerima ajakan menjadi relawan di desa Teja, mengajar anak-anak, dan mengunjungi panti asuhan.',question:'Rangkaian peristiwa tersebut menunjukkan alur cerita karena ....',options:[['A','Menggambarkan urutan peristiwa yang memperlihatkan perkembangan pengalaman Ayudia'],['B','Menjelaskan ciri fisik seluruh tokoh dalam cerita'],['C','Menyebutkan pesan moral secara langsung tanpa peristiwa'],['D','Menggambarkan pilihan kata yang membandingkan dua hal']],correct:'A',explanation:'Alur merupakan rangkaian peristiwa yang saling berhubungan. Peristiwa Ayudia mengurung diri, mengikuti kegiatan relawan, lalu berinteraksi dengan anak-anak membentuk perkembangan cerita dan menjadi dasar perubahan dirinya.',feedback:{A:'Benar. Kutipan merangkum urutan kejadian yang menggerakkan cerita dan memperlihatkan perkembangan pengalaman Ayudia.',B:'Ciri fisik berkaitan dengan deskripsi tokoh, bukan rangkaian peristiwa.',C:'Pesan moral berkaitan dengan amanat. Di sini yang ditampilkan adalah urutan kejadian.',D:'Perbandingan bahasa merupakan gaya bahasa, bukan alur.'}},
   3:{quote:'“Bus akan berangkat pada jam 8 dan perjalanan menempuh 3 jam ke pusat kota desa Teja ... menggunakan kapal dengan waktu tempuh 3 jam.”',question:'Petunjuk latar yang dapat ditemukan secara langsung dalam kutipan tersebut adalah ....',options:[['A','Latar waktu saja, tanpa petunjuk tempat'],['B','Latar tempat saja, tanpa petunjuk waktu'],['C','Latar waktu dan tempat perjalanan menuju desa Teja'],['D','Latar suasana sedih saat Ayudia berbicara dengan Altha']],correct:'C',explanation:'Latar mencakup waktu dan tempat terjadinya peristiwa. “Jam 8” serta durasi perjalanan menjadi petunjuk waktu, sedangkan pusat kota desa Teja dan perjalanan menggunakan kapal menjadi petunjuk tempat/rute.',feedback:{A:'Kutipan juga menyebut pusat kota desa Teja dan perjalanan menggunakan kapal, sehingga ada petunjuk tempat.',B:'Kutipan menyebut “jam 8” serta durasi tiga jam, sehingga ada petunjuk waktu.',C:'Benar. Kutipan memberikan petunjuk waktu perjalanan dan tempat tujuan/rute.',D:'Suasana sedih muncul pada bagian cerita lain, bukan dalam kutipan perjalanan ini.'}},
@@ -136,12 +144,21 @@ async function mission(id){
  const previousChoice=old.mcq_answer?old.mcq_answer.charAt(0):'';
  shell(`<main class="main"><div class="mission-head"><div><div class="kicker">MISI ${id} DARI 7</div><h2 class="h2">${m.title} — ${m.sub}</h2><p class="sub">${m.questions[0]}</p></div><div class="timer">⏱️ ${m.time} menit</div></div><div class="rule">PILIHAN GANDA → UNSUR → BUKTI TEKS → ALASAN/INTERPRETASI</div>
  <section class="card">
-   <section id="mcqStage" class="mcq-stage">
-     <div class="kicker">TAHAP 1 • PILIHAN GANDA</div>
-     <div class="story-quote"><b>Kutipan cerpen:</b><p>${esc(q.quote)}</p></div><h3 class="mcq-question">${q.question}</h3>
-     <p class="sub">Pilih satu jawaban sebelum melanjutkan ke analisis esai.</p>
+   <section id="mcqIdentifyStage" class="mcq-stage">
+     <div class="kicker">TAHAP 1 • IDENTIFIKASI UNSUR</div>
+     <div class="story-quote"><b>Kutipan cerpen:</b><p>${esc(q.quote)}</p></div>
+     <h3 class="mcq-question">${mcqQuestions[id].question}</h3>
+     <p class="sub">Tentukan unsur intrinsik yang berkaitan dengan kutipan tersebut.</p>
+     <div class="mcq-options">${mcqQuestions[id].options.map(([letter,label])=>'<label class="mcq-option"><input type="radio" name="mcqIdentifyChoice" value="'+letter+'"><span><b>'+letter+'.</b> '+label+'</span></label>').join('')}</div>
+     <button class="btn" type="button" onclick="continueToSpecificMCQ(${id})">Lanjut ke Pertanyaan 2 →</button>
+   </section>
+   <section id="mcqStage" class="mcq-stage" style="display:none">
+     <div class="kicker">TAHAP 2 • PEMAHAMAN KUTIPAN</div>
+     <div class="story-quote"><b>Kutipan cerpen:</b><p>${esc(q.quote)}</p></div>
+     <h3 class="mcq-question">${q.question}</h3>
+     <p class="sub">Jawab pertanyaan berdasarkan bukti dalam kutipan cerpen.</p>
      <div class="mcq-options">${q.options.map(([letter,label])=>'<label class="mcq-option"><input type="radio" name="mcqChoice" value="'+letter+'" '+(previousChoice===letter?'checked':'')+'><span><b>'+letter+'.</b> '+label+'</span></label>').join('')}</div>
-     <button class="btn" type="button" onclick="continueToEssay(${id})">Lanjut ke Esai →</button>
+     <button class="btn" type="button" onclick="continueToEssay(${id})">Lihat Pembahasan & Lanjut ke Esai →</button>
    </section>
    <section id="essayStage" style="display:none">
      <div id="mcqFeedback" class="mcq-feedback" role="status" aria-live="polite"></div><div class="quote"><b>Tahap 2 • Analisis Esai</b><p>Gunakan pemahamanmu untuk menganalisis cerpen. Sertakan bukti teks dan alasan yang mendukung jawaban.</p><p><b>Fokus misi:</b> ${m.questions.join(' • ')}</p></div>
@@ -152,19 +169,29 @@ async function mission(id){
    </section>
  </section></main>`,'Misi '+id);
 }
+function continueToSpecificMCQ(id){
+ const selected=document.querySelector('input[name="mcqIdentifyChoice"]:checked');
+ if(!selected)return alert('Pilih satu jawaban untuk mengidentifikasi unsur intrinsik terlebih dahulu.');
+ const q=mcqQuestions[id], option=q.options.find(x=>x[0]===selected.value), isCorrect=selected.value===q.correct;
+ window.__missionIdentifyResult={id,answer:option[0]+'. '+option[1],correct:isCorrect,feedback:q.feedback[option[0]],explanation:q.explanation};
+ document.getElementById('mcqIdentifyStage').style.display='none';
+ document.getElementById('mcqStage').style.display='block';
+ window.scrollTo({top:0,behavior:'smooth'});
+}
 function continueToEssay(id){
  const selected=document.querySelector('input[name="mcqChoice"]:checked');
- if(!selected)return alert('Pilih satu jawaban pilihan ganda terlebih dahulu.');
+ if(!selected)return alert('Pilih satu jawaban untuk pertanyaan pilihan ganda kedua terlebih dahulu.');
  const q=mcqQuestions[id], option=q.options.find(x=>x[0]===selected.value), isCorrect=selected.value===q.correct;
- document.getElementById('mcqSelected').value=option[0]+'. '+option[1];
- document.getElementById('mcqScore').value=isCorrect?'1':'0';
+ const identify=window.__missionIdentifyResult||{answer:'Belum tercatat',correct:false,feedback:'',explanation:''};
+ document.getElementById('mcqSelected').value='PG 1: '+identify.answer+' | PG 2: '+option[0]+'. '+option[1];
+ document.getElementById('mcqScore').value=(Number(identify.correct)+Number(isCorrect));
  const feedback=document.getElementById('mcqFeedback');
- feedback.className='mcq-feedback '+(isCorrect?'is-correct':'is-incorrect');
- feedback.innerHTML='<h3>'+(isCorrect?'Jawaban kamu benar':'Jawaban kamu belum tepat')+'</h3>'+
-   '<p><b>Jawaban kamu:</b> '+option[0]+'. '+option[1]+'</p>'+
-   '<p><b>Penjelasan:</b> '+q.feedback[option[0]]+'</p>'+
-   (isCorrect?'':'<p><b>Jawaban yang tepat:</b> '+q.correct+'. '+q.options.find(x=>x[0]===q.correct)[1]+'</p>')+
-   '<p><b>Konsep unsur intrinsik:</b> '+q.explanation+'</p>';
+ feedback.className='mcq-feedback '+(isCorrect&&identify.correct?'is-correct':'is-incorrect');
+ feedback.innerHTML='<h3>Hasil dua pertanyaan PG: '+(Number(identify.correct)+Number(isCorrect))+'/2 benar</h3>'+
+   '<p><b>PG 1 — Identifikasi unsur:</b> '+(identify.correct?'Benar. ':'Belum tepat. ')+identify.feedback+'</p>'+
+   '<p><b>PG 2 — Pemahaman kutipan:</b> '+(isCorrect?'Benar. ':'Belum tepat. ')+q.feedback[option[0]]+'</p>'+
+   '<p><b>Jawaban tepat PG 2:</b> '+q.correct+'. '+q.options.find(x=>x[0]===q.correct)[1]+'</p>'+
+   '<p><b>Penjelasan unsur intrinsik:</b> '+q.explanation+'</p>';
  document.getElementById('mcqStage').style.display='none';
  document.getElementById('essayStage').style.display='block';
  window.scrollTo({top:0,behavior:'smooth'});
@@ -188,7 +215,7 @@ async function sendAnswer(id){
    let a=getLocal('md_answers',[]),old=a.find(x=>x.student_id===S.student.id&&x.mission_no===id),row={id:old?.id||'a_'+Date.now(),student_id:S.student.id,class_id:S.student.class_id,class_code:S.student.class_code,student_name:S.student.name,mission_no:id,mission_title:m.title,answer,evidence,reason,mcq_answer:mcqAnswer,mcq_score:mcqScore,score:old?.score??null,feedback:old?.feedback||'',status:'submitted',updated_at:new Date().toISOString()};
    a=old?a.map(x=>x.id===old.id?row:x):[...a,row];putLocal('md_answers',a);
  }
- alert('Misi '+id+' berhasil dikirim. Hasil PG: '+(mcqScore===1?'Benar':'Belum tepat')+'.');
+ alert('Misi '+id+' berhasil dikirim. Hasil PG: '+mcqScore+'/2 benar'.');
  id<7?renderStudent():renderResult();
 }
 async function renderResult(){
