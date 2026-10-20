@@ -439,7 +439,8 @@ async function viewStudentSummary(studentId,code){
  const missionRows=missions.map(m=>{
    const a=byMission.get(m.id);
    if(!a)return {m,a:null,pg1:null,pg2:null,essay:null,raw:null,grade:null};
-   const pg1=a.mcq_identify_score==null?null:Number(a.mcq_identify_score),pg2=a.mcq_context_score==null?null:Number(a.mcq_context_score);
+   const selectedParts=String(a.mcq_answer||'').split(' | '),identifyLetter=selectedParts[0]?.match(/^PG 1:\\s*([A-D])\\./)?.[1],contextLetter=selectedParts[1]?.match(/^PG 2:\\s*([A-D])\\./)?.[1];
+   const pg1=a.mcq_identify_score==null?(identifyLetter?Number(identifyLetter===mcqIdentifyQuestions[m.id]?.correct):null):Number(a.mcq_identify_score),pg2=a.mcq_context_score==null?(contextLetter?Number(contextLetter===mcqQuestions[m.id]?.correct):null):Number(a.mcq_context_score);
    const rubric=[a.essay_answer_score,a.essay_evidence_score,a.essay_reason_score];
    const essay=rubric.every(v=>v!==null&&v!==undefined&&v!=='')?rubric.reduce((s,v)=>s+Number(v),0):null;
    const pg=(pg1===null||pg2===null)?Number(a.mcq_score)||0:pg1+pg2,raw=essay===null?null:pg+essay;
@@ -448,7 +449,7 @@ async function viewStudentSummary(studentId,code){
  const evaluated=missionRows.filter(x=>x.grade!==null),average=evaluated.length?Math.round(evaluated.reduce((s,x)=>s+x.grade,0)/evaluated.length):null;
  const complete=evaluated.length===7;
  shell(`<main class="main"><div class="kicker">REKAP NILAI SISWA</div><h2 class="h2">${esc(student.name)}</h2><p class="sub">${esc(code)} • Rincian nilai Misi 1–7</p>
- <section class="card"><div class="grid2"><div class="stat"><span>Skor PG dari misi terkirim</span><b>${rows.reduce((s,a)=>s+(Number(a.mcq_score)||0),0)}/${rows.length*2}</b></div><div class="stat"><span>Nilai akhir sementara</span><b>${average===null?'—':average+'/100'}</b><small>${evaluated.length}/7 misi sudah dinilai esainya</small></div></div>
+ <section class="card"><div class="grid2"><div class="stat"><span>Skor PG dari misi terkirim</span><b>${missionRows.filter(x=>x.pg1!==null&&x.pg2!==null).reduce((s,x)=>s+x.pg1+x.pg2,0)}/${missionRows.filter(x=>x.pg1!==null&&x.pg2!==null).length*2}</b></div><div class="stat"><span>Nilai akhir sementara</span><b>${average===null?'—':average+'/100'}</b><small>${evaluated.length}/7 misi sudah dinilai esainya</small></div></div>
  <p class="sub" style="margin-top:12px">${complete?'Semua misi sudah memiliki nilai esai. Nilai akhir dapat difinalisasi setelah pemeriksaan guru.':'Nilai sementara dihitung dari misi yang tiga komponen esainya sudah dinilai lengkap. Misi yang belum dinilai tidak dihitung dalam rata-rata sementara.'}</p></section>
  <section class="card"><div class="section-head"><h3>Rincian Nilai per Misi</h3><button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="teacherClass('${esc(code)}')">Kembali</button></div>
  <div class="tablewrap"><table class="tbl"><thead><tr><th>Misi</th><th>PG 1 /1</th><th>PG 2 /1</th><th>Esai: Jawaban /6</th><th>Bukti /6</th><th>Interpretasi /6</th><th>Skor mentah /20</th><th>Nilai /100</th><th>Aksi</th></tr></thead><tbody>
