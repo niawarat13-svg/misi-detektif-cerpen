@@ -66,13 +66,14 @@
     const answerRows = selectedAnswers.length
       ? selectedAnswers.sort((a,b) => a.mission_no - b.mission_no).map(x => `<tr>
           <td>${x.mission_no}. ${teacherFixEscape(x.mission_title)}</td>
+          <td>${teacherFixEscape(x.mcq_answer || 'Belum diisi')} <br><small>Skor PG: ${Number(x.mcq_score)||0}/2</small></td>
           <td>${teacherFixEscape(x.answer)}</td>
           <td>${teacherFixEscape(x.evidence)}</td>
           <td>${teacherFixEscape(x.reason || '-')}</td>
           <td>${x.score ?? '-'}</td>
-          <td><button type="button" class="ghost" style="background:#eaf2f8;color:#17365d" onclick="grade('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}','${teacherFixEscape(x.student_id)}')">Nilai</button></td>
+          <td><button type="button" class="ghost" style="background:#eaf2f8;color:#17365d;margin-bottom:5px" onclick="viewStudentAnswer('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}')">Lihat Hasil</button><br><button type="button" class="ghost" style="background:#eaf2f8;color:#17365d" onclick="grade('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}','${teacherFixEscape(x.student_id)}')">Nilai Esai</button></td>
         </tr>`).join('')
-      : `<tr><td colspan="6" class="empty">${selected ? 'Peserta ini belum mengirim jawaban.' : 'Pilih satu peserta untuk melihat jawaban Misi 1–7.'}</td></tr>`;
+      : `<tr><td colspan="7" class="empty">${selected ? 'Peserta ini belum mengirim jawaban.' : 'Pilih satu peserta untuk melihat jawaban Misi 1–7.'}</td></tr>`;
 
     const reflectionRows = reflections.map(x => {
       const s = students.find(stu => stu.id === x.student_id);
@@ -111,7 +112,7 @@
           <button type="button" class="ghost" style="background:#eaf2f8;color:#17365d" onclick="teacherClass('${teacherFixEscape(code)}', '${teacherFixEscape(selectedStudentId || '')}')">↻ Muat ulang</button>
         </div>
         <div class="tablewrap"><table class="tbl">
-          <thead><tr><th>Misi</th><th>Jawaban</th><th>Bukti</th><th>Interpretasi</th><th>Poin</th><th>Aksi</th></tr></thead>
+          <thead><tr><th>Misi</th><th>Hasil PG</th><th>Jawaban Esai</th><th>Bukti</th><th>Interpretasi</th><th>Poin Esai</th><th>Aksi</th></tr></thead>
           <tbody>${answerRows}</tbody>
         </table></div>
       </section>
