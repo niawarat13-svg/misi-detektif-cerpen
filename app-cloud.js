@@ -21,6 +21,15 @@ const missions = [
 {id:7,title:'Gaya Bahasa',sub:'Pecahkan Kode Bahasa',time:8,questions:['Gaya bahasa apa yang digunakan?','Apa kata penanda gaya bahasa tersebut?','Apa yang dibandingkan atau dimaksudkan?','Apa makna kutipan tersebut?'],hint:'Bedakan metafora dan simile berdasarkan ciri kebahasaan dan konteks kutipan.'}
 ];
 
+const mcqQuestions = {
+  1:{question:'Apa yang dimaksud dengan tema dalam cerpen?',options:[['A','Nama tokoh yang paling sering muncul'],['B','Gagasan atau persoalan utama yang mendasari cerita'],['C','Urutan kejadian dari awal sampai akhir'],['D','Tempat dan waktu terjadinya cerita']],correct:'B'},
+  2:{question:'Unsur alur dalam cerpen terutama berkaitan dengan ....',options:[['A','Urutan dan hubungan peristiwa dalam cerita'],['B','Sifat dan watak tokoh'],['C','Pesan yang ingin disampaikan pengarang'],['D','Pilihan kata dan majas yang digunakan']],correct:'A'},
+  3:{question:'Kalimat “Pukul tujuh pagi, di ruang kelas yang ramai” terutama menunjukkan ....',options:[['A','Tema dan amanat'],['B','Sudut pandang dan tokoh'],['C','Latar waktu, tempat, dan suasana'],['D','Konflik dan penyelesaian']],correct:'C'},
+  4:{question:'Bukti yang paling kuat untuk menyimpulkan bahwa seorang tokoh bersikap jujur adalah ....',options:[['A','Narator menyebut tokoh itu sebagai tokoh utama'],['B','Tokoh mengembalikan dompet yang ditemukannya kepada pemiliknya'],['C','Peristiwa berlangsung pada pagi hari'],['D','Cerita menggunakan kata “seperti”']],correct:'B'},
+  5:{question:'Perhatikan kalimat “Aku menunggu ibu di depan rumah.” Kalimat tersebut menggunakan sudut pandang ....',options:[['A','Orang ketiga serba tahu'],['B','Orang kedua'],['C','Orang pertama'],['D','Orang ketiga pengamat']],correct:'C'},
+  6:{question:'Amanat dalam cerpen paling tepat dipahami sebagai ....',options:[['A','Nama atau identitas tokoh dalam cerita'],['B','Pesan atau pelajaran hidup yang dapat disimpulkan dari peristiwa cerita'],['C','Rangkaian peristiwa yang dialami tokoh'],['D','Gambaran waktu dan tempat cerita']],correct:'B'},
+  7:{question:'Kalimat “Wajahnya bersinar seperti bulan” menggunakan gaya bahasa ....',options:[['A','Metafora'],['B','Simile/perumpamaan'],['C','Personifikasi'],['D','Hiperbola']],correct:'B'}
+};
 const S = { role:null, teacherUser:null, student:null };
 
 // Musik latar MP3 pilihan pengguna; diputar setelah tombol ditekan.
