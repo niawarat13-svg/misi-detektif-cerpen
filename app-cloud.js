@@ -155,9 +155,16 @@ async function mission(id){
 function continueToEssay(id){
  const selected=document.querySelector('input[name="mcqChoice"]:checked');
  if(!selected)return alert('Pilih satu jawaban pilihan ganda terlebih dahulu.');
- const q=mcqQuestions[id], option=q.options.find(x=>x[0]===selected.value);
+ const q=mcqQuestions[id], option=q.options.find(x=>x[0]===selected.value), isCorrect=selected.value===q.correct;
  document.getElementById('mcqSelected').value=option[0]+'. '+option[1];
- document.getElementById('mcqScore').value=selected.value===q.correct?'1':'0';
+ document.getElementById('mcqScore').value=isCorrect?'1':'0';
+ const feedback=document.getElementById('mcqFeedback');
+ feedback.className='mcq-feedback '+(isCorrect?'is-correct':'is-incorrect');
+ feedback.innerHTML='<h3>'+(isCorrect?'Jawaban kamu benar':'Jawaban kamu belum tepat')+'</h3>'+
+   '<p><b>Jawaban kamu:</b> '+option[0]+'. '+option[1]+'</p>'+
+   '<p><b>Penjelasan:</b> '+q.feedback[option[0]]+'</p>'+
+   (isCorrect?'':'<p><b>Jawaban yang tepat:</b> '+q.correct+'. '+q.options.find(x=>x[0]===q.correct)[1]+'</p>')+
+   '<p><b>Konsep unsur intrinsik:</b> '+q.explanation+'</p>';
  document.getElementById('mcqStage').style.display='none';
  document.getElementById('essayStage').style.display='block';
  window.scrollTo({top:0,behavior:'smooth'});
