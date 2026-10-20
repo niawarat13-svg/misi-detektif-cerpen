@@ -25,3 +25,14 @@
 .school-name{color:#fff;font-size:24px;font-weight:800;line-height:1.1;white-space:nowrap;letter-spacing:.2px}
 @media(max-width:900px){.school-name{font-size:18px}}
 @media(max-width:640px){.school-name{font-size:12px;white-space:normal;max-width:120px;text-align:right}.top-actions{gap:8px}}
+
+
+/* Pilihan ganda sebelum esai pada setiap misi */
+.mcq-stage{padding:4px 0 8px}
+.mcq-question{font-size:20px;line-height:1.45;margin:12px 0}
+.mcq-options{display:grid;gap:10px;margin:18px 0 22px}
+.mcq-option{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1px solid #d7e3ef;border-radius:12px;background:#fff;color:#17365d;cursor:pointer;line-height:1.5}
+.mcq-option:hover{border-color:#2f75b8;background:#f5f9fd}
+.mcq-option input[type=radio]{width:18px;height:18px;flex:0 0 18px;margin:3px 0 0;accent-color:#2f75b8}
+.mcq-option:has(input:checked){border-color:#2f75b8;background:#edf5fc;box-shadow:0 0 0 1px #2f75b8}
+@media(max-width:640px){.mcq-question{font-size:18px}.mcq-option{padding:12px}}
