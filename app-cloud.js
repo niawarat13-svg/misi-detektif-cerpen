@@ -191,9 +191,11 @@ function continueToEssay(id){
  feedback.className='mcq-feedback '+(isCorrect&&identify.correct?'is-correct':'is-incorrect');
  feedback.innerHTML='<h3>Hasil dua pertanyaan PG: '+(Number(identify.correct)+Number(isCorrect))+'/2 benar</h3>'+
    '<p><b>PG 1 — Identifikasi unsur:</b> '+(identify.correct?'Benar. ':'Belum tepat. ')+identify.feedback+'</p>'+
+   '<p><b>Jawaban tepat PG 1:</b> '+mcqIdentifyQuestions[id].correct+'. '+mcqIdentifyQuestions[id].options.find(x=>x[0]===mcqIdentifyQuestions[id].correct)[1]+'</p>'+
+   '<p><b>Penjelasan PG 1:</b> '+mcqIdentifyQuestions[id].explanation+'</p>'+
    '<p><b>PG 2 — Pemahaman kutipan:</b> '+(isCorrect?'Benar. ':'Belum tepat. ')+q.feedback[option[0]]+'</p>'+
    '<p><b>Jawaban tepat PG 2:</b> '+q.correct+'. '+q.options.find(x=>x[0]===q.correct)[1]+'</p>'+
-   '<p><b>Penjelasan unsur intrinsik:</b> '+q.explanation+'</p>';
+   '<p><b>Penjelasan unsur intrinsik pada kutipan:</b> '+q.explanation+'</p>';
  document.getElementById('mcqStage').style.display='none';
  document.getElementById('essayStage').style.display='block';
  window.scrollTo({top:0,behavior:'smooth'});
