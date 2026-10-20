@@ -58,7 +58,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <div class="bar"><i style="width:${progress / 7 * 100}%"></i></div>
-          <button type="button" class="ghost" style="background:#eaf2f8;color:#17365d" onclick="selectTeacherStudent('${teacherFixEscape(code)}','${teacherFixEscape(x.id)}')">Lihat Jawaban</button>
+          <button type="button" class="ghost" style="background:#eaf2f8;color:#17365d" onclick="selectTeacherStudent('${teacherFixEscape(code)}','${teacherFixEscape(x.id)}')">Lihat Jawaban</button><button type="button" class="ghost" style="background:#eaf2f8;color:#17365d" onclick="viewStudentSummary('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}')">Lihat Nilai</button>
         </div>
       </div>`;
     }).join('');
@@ -70,7 +70,7 @@
           <td>${teacherFixEscape(x.answer)}</td>
           <td>${teacherFixEscape(x.evidence)}</td>
           <td>${teacherFixEscape(x.reason || '-')}</td>
-          <td>${x.score ?? '-'}</td>
+          <td>${x.essay_answer_score == null || x.essay_evidence_score == null || x.essay_reason_score == null ? 'Belum dinilai' : (Number(x.essay_answer_score)+Number(x.essay_evidence_score)+Number(x.essay_reason_score))+'/18'}</td>
           <td><button type="button" class="ghost" style="background:#eaf2f8;color:#17365d;margin-bottom:5px" onclick="viewStudentAnswer('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}')">Lihat Hasil</button><br><button type="button" class="ghost" style="background:#eaf2f8;color:#17365d" onclick="grade('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}','${teacherFixEscape(x.student_id)}')">Nilai Esai</button></td>
         </tr>`).join('')
       : `<tr><td colspan="7" class="empty">${selected ? 'Peserta ini belum mengirim jawaban.' : 'Pilih satu peserta untuk melihat jawaban Misi 1–7.'}</td></tr>`;
@@ -112,7 +112,7 @@
           <button type="button" class="ghost" style="background:#eaf2f8;color:#17365d" onclick="teacherClass('${teacherFixEscape(code)}', '${teacherFixEscape(selectedStudentId || '')}')">↻ Muat ulang</button>
         </div>
         <div class="tablewrap"><table class="tbl">
-          <thead><tr><th>Misi</th><th>Hasil PG</th><th>Jawaban Esai</th><th>Bukti</th><th>Interpretasi</th><th>Poin Esai</th><th>Aksi</th></tr></thead>
+          <thead><tr><th>Misi</th><th>Hasil PG</th><th>Jawaban Esai</th><th>Bukti</th><th>Interpretasi</th><th>Poin Esai /18</th><th>Aksi</th></tr></thead>
           <tbody>${answerRows}</tbody>
         </table></div>
       </section>
