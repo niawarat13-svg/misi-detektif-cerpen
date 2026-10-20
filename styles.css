@@ -9,7 +9,7 @@
 
 /* Header logo and navigation responsive sizing */
 .top-actions{flex-shrink:0;min-width:0}
-.school-logo{display:block;width:64px;height:64px;flex:0 0 64px;object-fit:contain;background:#fff;border:3px solid #fff;border-radius:14px;padding:2px}
+.school-logo{display:block;width:64px;height:64px;flex:0 0 64px;object-fit:contain;background:transparent;border:0;border-radius:8px;padding:0}
 .top .ghost{white-space:nowrap;flex-shrink:0}
 @media(max-width:640px){
   .top{height:auto;min-height:72px;padding:10px 12px;gap:10px}
@@ -17,6 +17,6 @@
   .brand b{font-size:16px}
   .brand small{font-size:12px}
   .top-actions{gap:6px}
-  .school-logo{width:52px;height:52px;flex-basis:52px;border-radius:11px}
+  .school-logo{width:52px;height:52px;flex-basis:52px;border-radius:6px}
   .top .ghost{padding:10px 12px;font-size:14px}
 }
