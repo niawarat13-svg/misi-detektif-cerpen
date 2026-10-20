@@ -68,7 +68,7 @@ function esc(x=''){ return String(x).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 function getLocal(k,d=[]){ try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d));}catch{return d;} }
 function putLocal(k,v){localStorage.setItem(k,JSON.stringify(v));}
 function shell(content,title=''){
-  document.getElementById('app').innerHTML=`<div class="shell"><header class="top"><div class="brand" onclick="home()"><div class="logo">🔎</div><div><b>Misi Detektif</b><small>Unsur Intrinsik Cerpen</small></div></div><div class="top-actions">${title?`<span class="tag">${esc(title)}</span>`:''}<button class="ghost" onclick="home()">Beranda</button></div></header>${content}<footer class="footer">Game-Based Learning Bahasa Indonesia • Kelas XI/F</footer></div>`;
+  document.getElementById('app').innerHTML=`<div class="shell"><header class="top"><div class="brand" onclick="home()"><div class="logo">🔎</div><div><b>Misi Detektif</b><small>Unsur Intrinsik Cerpen</small></div></div><div class="top-actions">${title?`<span class="tag">${esc(title)}</span>`:'' }<img src="./logo-sma-khadijah.png" alt="Logo Sekolah Pesantren Kota Khadijah" class="school-logo" style="width:48px;height:48px;object-fit:contain;background:#fff;border-radius:10px;padding:3px" /><button class="ghost" onclick="home()">Beranda</button></div></header></header>${content}<footer class="footer">Game-Based Learning Bahasa Indonesia • Kelas XI/F</footer></div>`;
 }
 function home(){
   S.role=null;
