@@ -217,7 +217,7 @@ async function sendAnswer(id){
    let a=getLocal('md_answers',[]),old=a.find(x=>x.student_id===S.student.id&&x.mission_no===id),row={id:old?.id||'a_'+Date.now(),student_id:S.student.id,class_id:S.student.class_id,class_code:S.student.class_code,student_name:S.student.name,mission_no:id,mission_title:m.title,answer,evidence,reason,mcq_answer:mcqAnswer,mcq_score:mcqScore,score:old?.score??null,feedback:old?.feedback||'',status:'submitted',updated_at:new Date().toISOString()};
    a=old?a.map(x=>x.id===old.id?row:x):[...a,row];putLocal('md_answers',a);
  }
- alert('Misi '+id+' berhasil dikirim. Hasil PG: '+mcqScore+'/2 benar'.');
+ alert('Misi '+id+' berhasil dikirim. Hasil PG: '+mcqScore+'/2 benar.');
  id<7?renderStudent():renderResult();
 }
 async function renderResult(){
