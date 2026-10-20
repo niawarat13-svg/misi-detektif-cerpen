@@ -131,8 +131,41 @@ function story(){const ps=window.STORY_TEXT||window.STORY||[];const title=ps[0]|
 function storyFont(delta){const el=document.getElementById('storyText');if(!el)return;const cur=parseFloat(getComputedStyle(el).fontSize)||18;el.style.fontSize=Math.min(26,Math.max(15,cur+delta))+'px';}
 
 async function mission(id){
- const m=missions.find(x=>x.id===id); const old=(await studentAnswers()).find(x=>x.mission_no===id)||{};
- shell(`<main class="main"><div class="mission-head"><div><div class="kicker">MISI ${id} DARI 7</div><h2 class="h2">${m.title} — ${m.sub}</h2><p class="sub">${m.questions[0]}</p></div><div class="timer">⏱️ ${m.time} menit</div></div><div class="rule">UNSUR → BUKTI TEKS → ALASAN/INTERPRETASI</div><section class="card"><div class="quote"><b>Fokus misi:</b><p>${m.questions.join(' • ')}</p></div><div class="form"><label>Unsur / Jawaban<textarea id="ans" rows="4">${esc(old.answer||'')}</textarea></label><label>Bukti Teks<textarea id="evi" rows="5">${esc(old.evidence||'')}</textarea></label><label>Alasan / Interpretasi<textarea id="rea" rows="5">${esc(old.reason||'')}</textarea></label></div><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end"><button class="hint-btn" onclick='hint(${JSON.stringify(m.hint)})'>💡 Gunakan Hint</button><button class="btn" onclick="sendAnswer(${id})">Simpan & Kirim →</button></div></section></main>`,'Misi '+id);
+ const m=missions.find(x=>x.id===id), q=mcqQuestions[id];
+ const old=(await studentAnswers()).find(x=>x.mission_no===id)||{};
+ const previousChoice=old.mcq_answer?old.mcq_answer.charAt(0):'';
+ shell(\`<main class="main"><div class="mission-head"><div><div class="kicker">MISI \${id} DARI 7</div><h2 class="h2">\${m.title} — \${m.sub}</h2><p class="sub">\${m.questions[0]}</p></div><div class="timer">⏱️ \${m.time} menit</div></div><div class="rule">PILIHAN GANDA → UNSUR → BUKTI TEKS → ALASAN/INTERPRETASI</div>
+ <section class="card">
+   <section id="mcqStage" class="mcq-stage">
+     <div class="kicker">TAHAP 1 • PILIHAN GANDA</div>
+     <h3 class="mcq-question">\${q.question}</h3>
+     <p class="sub">Pilih satu jawaban sebelum melanjutkan ke analisis esai.</p>
+     <div class="mcq-options">\${q.options.map(([letter,label])=>'<label class="mcq-option"><input type="radio" name="mcqChoice" value="'+letter+'" '+(previousChoice===letter?'checked':'')+'><span><b>'+letter+'.</b> '+label+'</span></label>').join('')}</div>
+     <button class="btn" type="button" onclick="continueToEssay(\${id})">Lanjut ke Esai →</button>
+   </section>
+   <section id="essayStage" style="display:none">
+     <div class="quote"><b>Tahap 2 • Analisis Esai</b><p>Gunakan pemahamanmu untuk menganalisis cerpen. Sertakan bukti teks dan alasan yang mendukung jawaban.</p><p><b>Fokus misi:</b> \${m.questions.join(' • ')}</p></div>
+     <input type="hidden" id="mcqSelected" value="\${esc(old.mcq_answer||'')}">
+     <input type="hidden" id="mcqScore" value="\${old.mcq_score??0}">
+     <div class="form"><label>Unsur / Jawaban<textarea id="ans" rows="4">\${esc(old.answer||'')}</textarea></label><label>Bukti Teks<textarea id="evi" rows="5">\${esc(old.evidence||'')}</textarea></label><label>Alasan / Interpretasi<textarea id="rea" rows="5">\${esc(old.reason||'')}</textarea></label></div>
+     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between"><button class="ghost" type="button" onclick="backToMCQ()">← Kembali ke PG</button><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="hint-btn" onclick='hint(\${JSON.stringify(m.hint)})'>💡 Gunakan Hint</button><button class="btn" onclick="sendAnswer(\${id})">Simpan & Kirim →</button></div></div>
+   </section>
+ </section></main>\`,'Misi '+id);
+}
+function continueToEssay(id){
+ const selected=document.querySelector('input[name="mcqChoice"]:checked');
+ if(!selected)return alert('Pilih satu jawaban pilihan ganda terlebih dahulu.');
+ const q=mcqQuestions[id], option=q.options.find(x=>x[0]===selected.value);
+ document.getElementById('mcqSelected').value=option[0]+'. '+option[1];
+ document.getElementById('mcqScore').value=selected.value===q.correct?'1':'0';
+ document.getElementById('mcqStage').style.display='none';
+ document.getElementById('essayStage').style.display='block';
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function backToMCQ(){
+ document.getElementById('essayStage').style.display='none';
+ document.getElementById('mcqStage').style.display='block';
+ window.scrollTo({top:0,behavior:'smooth'});
 }
 function hint(text){alert('💡 HINT\n\n'+text+'\n\nGunakan sebagai petunjuk, bukan sebagai jawaban langsung.');}
 async function sendAnswer(id){
