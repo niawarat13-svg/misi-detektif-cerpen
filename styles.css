@@ -36,3 +36,11 @@
 .mcq-option input[type=radio]{width:18px;height:18px;flex:0 0 18px;margin:3px 0 0;accent-color:#2f75b8}
 .mcq-option:has(input:checked){border-color:#2f75b8;background:#edf5fc;box-shadow:0 0 0 1px #2f75b8}
 @media(max-width:640px){.mcq-question{font-size:18px}.mcq-option{padding:12px}}
+
+
+/* Umpan balik edukatif untuk pilihan ganda */
+.mcq-feedback{margin:0 0 18px;padding:16px 18px;border:1px solid #d7e3ef;border-radius:14px;background:#f5f9fd;color:#17365d;line-height:1.6}
+.mcq-feedback h3{margin:0 0 10px;font-size:19px}
+.mcq-feedback p{margin:8px 0}
+.mcq-feedback.is-correct{background:#eff9ed;border-color:#a8d99b}
+.mcq-feedback.is-incorrect{background:#fff5e5;border-color:#f0ca7a}
