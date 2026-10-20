@@ -44,3 +44,7 @@
 .mcq-feedback p{margin:8px 0}
 .mcq-feedback.is-correct{background:#eff9ed;border-color:#a8d99b}
 .mcq-feedback.is-incorrect{background:#fff5e5;border-color:#f0ca7a}
+
+
+.story-quote{margin:14px 0 18px;padding:14px 16px;border-left:4px solid #2f8b9a;border-radius:10px;background:#edf7f8;color:#17365d;line-height:1.65}
+.story-quote p{margin:8px 0 0;font-style:italic}
