@@ -77,7 +77,8 @@
 
     const reflectionRows = reflections.map(x => {
       const s = students.find(stu => stu.id === x.student_id);
-      return `<div class="row"><div><b>${teacherFixEscape(s?.name || 'Peserta')}</b><small>${teacherFixEscape(s?.email || '')}</small><small>${teacherFixEscape(x.r1 || '')}</small></div></div>`;
+      const studentName = teacherFixEscape(x.student_name || s?.name || 'Peserta');
+      return `<div class="row"><div><b>${studentName}</b><small>${teacherFixEscape(s?.email || '')}</small><small>${x.ratings ? 'Angket respons telah dikirim' : 'Refleksi pembelajaran sebelumnya'}</small></div><button type="button" class="ghost" style="background:#eaf2f8;color:#17365d" onclick="openClassReflection('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}')">Lihat Respons</button></div>`;
     }).join('');
 
     const materialRows = materials.length
@@ -123,8 +124,10 @@
       </section>
 
       <section class="card">
-        <div class="section-head"><h3>Refleksi</h3></div>
-        ${reflectionRows || '<div class="empty">Belum ada refleksi.</div>'}
+        <div class="section-head">
+          <div><h3>Hasil Respons Peserta Didik</h3><small class="sub">Pilih nama siswa untuk membaca angket dan refleksi.</small></div>
+        </div>
+        ${reflectionRows || '<div class="empty">Belum ada respons peserta didik.</div>'}
       </section>
 
       <button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="teacherDash()">← Dashboard</button>
