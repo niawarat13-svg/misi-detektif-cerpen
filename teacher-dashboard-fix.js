@@ -94,6 +94,71 @@
     }
   };
 
+
+  window.exportQuestionnairePdf = async function (code) {
+    try {
+      const loadScript = (src, ready) => new Promise((resolve,reject) => {
+        if (ready()) return resolve();
+        const script=document.createElement('script');
+        script.src=src;
+        script.onload=resolve;
+        script.onerror=()=>reject(new Error('Pustaka PDF tidak dapat dimuat. Periksa koneksi internet lalu coba lagi.'));
+        document.head.appendChild(script);
+      });
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',()=>!!window.jspdf?.jsPDF);
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js',()=>!!window.jspdf?.jsPDF?.API?.autoTable);
+      const [classes, allReflections] = await Promise.all([teacherClasses(),cloudRows('reflections')]);
+      const cls=classes.find(x=>x.code===code);
+      if(!cls) throw new Error('Kelas tidak ditemukan.');
+      const responses=allReflections.filter(x=>(x.class_id===cls.id||x.class_code===code)&&x.ratings&&Object.keys(x.ratings).length);
+      if(!responses.length) return alert('Belum ada respons angket yang dapat dibuatkan laporan.');
+      const questions=[
+        'Saya tertarik menggunakan media pembelajaran ini.','Tampilan media menarik.','Warna dan gambar dalam media menarik.','Petunjuk penggunaan media mudah dipahami.','Media mudah digunakan.','Materi disajikan secara sistematis.','Bahasa yang digunakan mudah dipahami.','Contoh membantu saya memahami materi.','Gambar dan ilustrasi membantu pembelajaran.','Latihan membantu saya memahami materi.','Media membuat pembelajaran lebih menarik.','Media membantu saya belajar secara mandiri.','Saya lebih aktif ketika menggunakan media.','Media meningkatkan motivasi belajar saya.','Saya ingin menggunakan media ini kembali.'
+      ];
+      const values=responses.flatMap(r=>Object.values(r.ratings||{}).map(Number).filter(v=>v>=1&&v<=5));
+      const total=values.length;
+      const mean=total?values.reduce((a,b)=>a+b,0)/total:0;
+      const percent=total?mean/5*100:0;
+      const category=mean>=4.21?'Sangat praktis':mean>=3.41?'Praktis':mean>=2.61?'Cukup praktis':mean>=1.81?'Kurang praktis':mean>0?'Tidak praktis':'Belum ada data';
+      const itemRows=questions.map((q,i)=>{
+        const vals=responses.map(r=>Number((r.ratings||{})['q'+(i+1)]||0)).filter(v=>v>=1&&v<=5);
+        const avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
+        const positive=vals.length?vals.filter(v=>v>=4).length/vals.length*100:0;
+        return [String(i+1),q,avg?avg.toFixed(2):'-',vals.length?positive.toFixed(1)+'%':'-',String(vals.length)];
+      });
+      const labels={5:'Sangat Setuju',4:'Setuju',3:'Netral',2:'Tidak Setuju',1:'Sangat Tidak Setuju'};
+      const distRows=[5,4,3,2,1].map(v=>[labels[v],String(values.filter(x=>x===v).length),total?(values.filter(x=>x===v).length/total*100).toFixed(1)+'%':'0,0%']);
+      const {jsPDF}=window.jspdf;
+      const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+      const className=cls.name||cls.class_name||code;
+      const date=new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+      doc.setFont('helvetica','bold');doc.setFontSize(16);
+      doc.text('LAPORAN HASIL ANGKET RESPONS PESERTA DIDIK',14,17);
+      doc.setFont('helvetica','normal');doc.setFontSize(10);
+      doc.text('Media Pembelajaran Misi Detektif Cerpen',14,24);
+      doc.text('Kelas: '+className+'   |   Kode kelas: '+code,14,32);
+      doc.text('Tanggal laporan: '+date+'   |   Jumlah responden: '+responses.length+'   |   Jumlah jawaban: '+total,14,39);
+      doc.setFont('helvetica','bold');doc.setFontSize(11);
+      doc.text('Ringkasan Kepraktisan Media',14,49);
+      doc.setFont('helvetica','normal');doc.setFontSize(10);
+      doc.text('Rata-rata keseluruhan: '+mean.toFixed(2)+' dari 5',14,57);
+      doc.text('Persentase skor maksimal: '+percent.toFixed(1)+'%',95,57);
+      doc.text('Kategori: '+category,190,57);
+      doc.autoTable({startY:64,head:[['No.','Pernyataan','Rata-rata','SS + S','Jumlah jawaban']],body:itemRows,theme:'grid',styles:{font:'helvetica',fontSize:8,cellPadding:2.2,overflow:'linebreak'},headStyles:{fillColor:[30,65,105]},columnStyles:{0:{cellWidth:12},1:{cellWidth:155},2:{cellWidth:25},3:{cellWidth:25},4:{cellWidth:30}},margin:{left:14,right:14}});
+      let y=doc.lastAutoTable.finalY+10;
+      if(y>170){doc.addPage();y=18;}
+      doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('Distribusi Pilihan Jawaban',14,y);
+      doc.autoTable({startY:y+4,head:[['Pilihan jawaban','Frekuensi','Persentase']],body:distRows,theme:'grid',styles:{font:'helvetica',fontSize:9,cellPadding:2.5},headStyles:{fillColor:[30,65,105]},margin:{left:14,right:150},tableWidth:130});
+      const pageCount=doc.getNumberOfPages();
+      for(let p=1;p<=pageCount;p++){doc.setPage(p);doc.setFontSize(8);doc.setTextColor(100);doc.text('Misi Detektif Cerpen | Laporan rekapitulasi kelas',14,202);doc.text('Halaman '+p+' dari '+pageCount,doc.internal.pageSize.getWidth()-14,202,{align:'right'});}
+      const safeCode=String(code).replace(/[^a-z0-9_-]/gi,'_');
+      doc.save('Laporan_Kepraktisan_'+safeCode+'_'+new Date().toISOString().slice(0,10)+'.pdf');
+    } catch(err) {
+      console.error('exportQuestionnairePdf:',err);
+      alert('Ekspor PDF gagal: '+(err.message||err));
+    }
+  };
+
   let selectedStudentId = null;
 
   window.selectTeacherStudent = async function (code, studentId) {
@@ -183,7 +248,7 @@
     const distributionRows = [5,4,3,2,1].map((v,i)=>'<tr><td>'+['SS','S','N','TS','STS'][i]+'</td><td>'+responseCounts[i]+'</td><td>'+(totalAnswers?(responseCounts[i]/totalAnswers*100).toFixed(1):'0.0')+'%</td></tr>').join('');
     const practicalitySummary = questionnaireRows.length ? `
       <section class="card">
-        <div class="section-head"><div><h3>Rekapitulasi Kepraktisan Media</h3><small class="sub">Ringkasan angket respons peserta didik pada kelas ini.</small></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="tag">${questionnaireRows.length} respons</span><button type="button" class="btn" onclick="exportQuestionnaireExcel('${teacherFixEscape(code)}')">↓ Ekspor Excel</button></div></div>
+        <div class="section-head"><div><h3>Rekapitulasi Kepraktisan Media</h3><small class="sub">Ringkasan angket respons peserta didik pada kelas ini.</small></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="tag">${questionnaireRows.length} respons</span><button type="button" class="btn" onclick="exportQuestionnaireExcel('${teacherFixEscape(code)}')">↓ Ekspor Excel</button><button type="button" class="btn" onclick="exportQuestionnairePdf('${teacherFixEscape(code)}')">↓ Ekspor PDF</button></div></div>
         <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
           <div class="stat card"><small>Rata-rata keseluruhan</small><h2>${overallMean.toFixed(2)} / 5</h2></div>
           <div class="stat card"><small>Persentase skor maksimal</small><h2>${overallPercent.toFixed(1)}%</h2></div>
