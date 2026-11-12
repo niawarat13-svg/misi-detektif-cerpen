@@ -11,6 +11,89 @@
     }[m]));
   }
 
+
+  window.exportQuestionnaireExcel = async function (code) {
+    try {
+      const loadXlsx = async () => {
+        if (window.XLSX) return;
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+          script.onload = resolve;
+          script.onerror = () => reject(new Error('Pustaka Excel tidak dapat dimuat. Periksa koneksi internet lalu coba lagi.'));
+          document.head.appendChild(script);
+        });
+      };
+      await loadXlsx();
+      const [classes, allReflections, allStudents] = await Promise.all([
+        teacherClasses(), cloudRows('reflections'), cloudRows('students')
+      ]);
+      const cls = classes.find(x => x.code === code);
+      if (!cls) throw new Error('Kelas tidak ditemukan.');
+      const sameClass = x => x.class_id === cls.id || x.class_code === code;
+      const students = allStudents.filter(sameClass);
+      const responses = allReflections.filter(sameClass).filter(x => x.ratings && Object.keys(x.ratings).length);
+      if (!responses.length) return alert('Belum ada respons angket yang dapat diekspor.');
+      const questions = [
+        'Saya tertarik menggunakan media pembelajaran ini.','Tampilan media menarik.','Warna dan gambar dalam media menarik.','Petunjuk penggunaan media mudah dipahami.','Media mudah digunakan.','Materi disajikan secara sistematis.','Bahasa yang digunakan mudah dipahami.','Contoh membantu saya memahami materi.','Gambar dan ilustrasi membantu pembelajaran.','Latihan membantu saya memahami materi.','Media membuat pembelajaran lebih menarik.','Media membantu saya belajar secara mandiri.','Saya lebih aktif ketika menggunakan media.','Media meningkatkan motivasi belajar saya.','Saya ingin menggunakan media ini kembali.'
+      ];
+      const choiceLabel = {5:'Sangat Setuju',4:'Setuju',3:'Netral',2:'Tidak Setuju',1:'Sangat Tidak Setuju'};
+      const studentById = new Map(students.map(s => [s.id,s]));
+      const rawHeader = ['No.','Nama Peserta','Email','Kode Kelas','Tanggal Respons'];
+      for (let i=0;i<15;i++) rawHeader.push('P'+(i+1)+' - '+questions[i]);
+      rawHeader.push('Kelebihan Media','Kekurangan Media','Saran Perbaikan');
+      const rawRows = responses.map((r,i) => {
+        const student = studentById.get(r.student_id) || {};
+        const row = [i+1,r.student_name || student.name || 'Peserta',student.email || '',code,r.created_at || r.updated_at || ''];
+        for(let q=1;q<=15;q++) {
+          const v=Number((r.ratings||{})['q'+q] || 0);
+          row.push(v ? v+' - '+choiceLabel[v] : '');
+        }
+        row.push(r.open1 || '',r.open2 || '',r.open3 || '');
+        return row;
+      });
+      const summaryHeader=['No.','Pernyataan','Rata-rata','SS + S (%)','Jumlah Jawaban'];
+      const summaryRows=questions.map((q,i)=>{
+        const vals=responses.map(r=>Number((r.ratings||{})['q'+(i+1)]||0)).filter(v=>v>=1&&v<=5);
+        const avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
+        const positive=vals.length?vals.filter(v=>v>=4).length/vals.length*100:0;
+        return [i+1,q,Number(avg.toFixed(2)),Number(positive.toFixed(1)),vals.length];
+      });
+      const values=responses.flatMap(r=>Object.values(r.ratings||{}).map(Number).filter(v=>v>=1&&v<=5));
+      const mean=values.length?values.reduce((a,b)=>a+b,0)/values.length:0;
+      const percent=values.length?mean/5*100:0;
+      const category=mean>=4.21?'Sangat praktis':mean>=3.41?'Praktis':mean>=2.61?'Cukup praktis':mean>=1.81?'Kurang praktis':mean>0?'Tidak praktis':'Belum ada data';
+      const dist=[5,4,3,2,1].map(v=>[choiceLabel[v],values.filter(x=>x===v).length,values.length?Number((values.filter(x=>x===v).length/values.length*100).toFixed(1)):0]);
+      const wb=XLSX.utils.book_new();
+      const wsData=XLSX.utils.aoa_to_sheet([rawHeader,...rawRows]);
+      wsData['!cols']=[{wch:6},{wch:24},{wch:30},{wch:16},{wch:22},...questions.map(()=>({wch:19})),{wch:35},{wch:35},{wch:35}];
+      XLSX.utils.book_append_sheet(wb,wsData,'Data Respons');
+      const wsSummary=XLSX.utils.aoa_to_sheet([
+        ['REKAPITULASI KEPRAKTISAN MEDIA'],
+        ['Nama Kelas',cls.name || code],
+        ['Kode Kelas',code],
+        ['Jumlah Respons',responses.length],
+        ['Rata-rata Keseluruhan',Number(mean.toFixed(2))],
+        ['Persentase Skor Maksimal (%)',Number(percent.toFixed(1))],
+        ['Kategori Kepraktisan',category],
+        [],
+        summaryHeader,
+        ...summaryRows,
+        [],
+        ['Distribusi Pilihan Jawaban'],
+        ['Pilihan','Frekuensi','Persentase (%)'],
+        ...dist
+      ]);
+      wsSummary['!cols']=[{wch:30},{wch:75},{wch:18},{wch:18},{wch:18}];
+      XLSX.utils.book_append_sheet(wb,wsSummary,'Rekapitulasi');
+      const filename='Angket_Respons_'+String(code).replace(/[^a-z0-9_-]/gi,'_')+'_'+new Date().toISOString().slice(0,10)+'.xlsx';
+      XLSX.writeFile(wb,filename);
+    } catch (err) {
+      console.error('exportQuestionnaireExcel:',err);
+      alert('Ekspor Excel gagal: '+(err.message || err));
+    }
+  };
+
   let selectedStudentId = null;
 
   window.selectTeacherStudent = async function (code, studentId) {
@@ -100,7 +183,7 @@
     const distributionRows = [5,4,3,2,1].map((v,i)=>'<tr><td>'+['SS','S','N','TS','STS'][i]+'</td><td>'+responseCounts[i]+'</td><td>'+(totalAnswers?(responseCounts[i]/totalAnswers*100).toFixed(1):'0.0')+'%</td></tr>').join('');
     const practicalitySummary = questionnaireRows.length ? `
       <section class="card">
-        <div class="section-head"><div><h3>Rekapitulasi Kepraktisan Media</h3><small class="sub">Ringkasan angket respons peserta didik pada kelas ini.</small></div><span class="tag">${questionnaireRows.length} respons</span></div>
+        <div class="section-head"><div><h3>Rekapitulasi Kepraktisan Media</h3><small class="sub">Ringkasan angket respons peserta didik pada kelas ini.</small></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="tag">${questionnaireRows.length} respons</span><button type="button" class="btn" onclick="exportQuestionnaireExcel('${teacherFixEscape(code)}')">↓ Ekspor Excel</button></div></div>
         <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
           <div class="stat card"><small>Rata-rata keseluruhan</small><h2>${overallMean.toFixed(2)} / 5</h2></div>
           <div class="stat card"><small>Persentase skor maksimal</small><h2>${overallPercent.toFixed(1)}%</h2></div>
