@@ -81,6 +81,37 @@
       return `<div class="row"><div><b>${studentName}</b><small>${teacherFixEscape(s?.email || '')}</small><small>${x.ratings ? 'Angket respons telah dikirim' : 'Refleksi pembelajaran sebelumnya'}</small></div><button type="button" class="ghost" style="background:#eaf2f8;color:#17365d" onclick="openClassReflection('${teacherFixEscape(x.id)}','${teacherFixEscape(code)}')">Lihat Respons</button></div>`;
     }).join('');
 
+    const questionnaireRows = reflections.filter(x => x.ratings && Object.keys(x.ratings).length);
+    const questionLabels = [
+      'Saya tertarik menggunakan media pembelajaran ini.','Tampilan media menarik.','Warna dan gambar dalam media menarik.','Petunjuk penggunaan media mudah dipahami.','Media mudah digunakan.','Materi disajikan secara sistematis.','Bahasa yang digunakan mudah dipahami.','Contoh membantu saya memahami materi.','Gambar dan ilustrasi membantu pembelajaran.','Latihan membantu saya memahami materi.','Media membuat pembelajaran lebih menarik.','Media membantu saya belajar secara mandiri.','Saya lebih aktif ketika menggunakan media.','Media meningkatkan motivasi belajar saya.','Saya ingin menggunakan media ini kembali.'
+    ];
+    const responseCounts = [5,4,3,2,1].map(v => questionnaireRows.reduce((n,r) => n + (Object.values(r.ratings || {}).filter(x => Number(x) === v).length),0));
+    const totalAnswers = responseCounts.reduce((a,b)=>a+b,0);
+    const totalScore = questionnaireRows.reduce((sum,r)=>sum+Object.values(r.ratings||{}).reduce((a,v)=>a+Number(v||0),0),0);
+    const overallMean = totalAnswers ? totalScore/totalAnswers : 0;
+    const overallPercent = totalAnswers ? totalScore/(totalAnswers*5)*100 : 0;
+    const practicality = overallMean >= 4.21 ? 'Sangat praktis' : overallMean >= 3.41 ? 'Praktis' : overallMean >= 2.61 ? 'Cukup praktis' : overallMean >= 1.81 ? 'Kurang praktis' : overallMean > 0 ? 'Tidak praktis' : 'Belum ada data';
+    const itemSummaryRows = questionLabels.map((label,i) => {
+      const vals = questionnaireRows.map(r=>Number((r.ratings||{})['q'+(i+1)]||0)).filter(v=>v>=1&&v<=5);
+      const avg = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+      const positive = vals.length ? vals.filter(v=>v>=4).length/vals.length*100 : 0;
+      return '<tr><td>'+(i+1)+'</td><td>'+teacherFixEscape(label)+'</td><td>'+(avg?avg.toFixed(2):'—')+'</td><td>'+(vals.length?positive.toFixed(1)+'%':'—')+'</td><td>'+vals.length+'</td></tr>';
+    }).join('');
+    const distributionRows = [5,4,3,2,1].map((v,i)=>'<tr><td>'+['SS','S','N','TS','STS'][i]+'</td><td>'+responseCounts[i]+'</td><td>'+(totalAnswers?(responseCounts[i]/totalAnswers*100).toFixed(1):'0.0')+'%</td></tr>').join('');
+    const practicalitySummary = questionnaireRows.length ? `
+      <section class="card">
+        <div class="section-head"><div><h3>Rekapitulasi Kepraktisan Media</h3><small class="sub">Ringkasan angket respons peserta didik pada kelas ini.</small></div><span class="tag">${questionnaireRows.length} respons</span></div>
+        <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+          <div class="stat card"><small>Rata-rata keseluruhan</small><h2>${overallMean.toFixed(2)} / 5</h2></div>
+          <div class="stat card"><small>Persentase skor maksimal</small><h2>${overallPercent.toFixed(1)}%</h2></div>
+          <div class="stat card"><small>Kategori kepraktisan</small><h2 style="font-size:20px">${practicality}</h2></div>
+        </div>
+        <p class="sub" style="margin:12px 0">Kategori berdasarkan rata-rata: 1,00–1,80 tidak praktis; 1,81–2,60 kurang praktis; 2,61–3,40 cukup praktis; 3,41–4,20 praktis; 4,21–5,00 sangat praktis. Persentase positif adalah gabungan jawaban SS dan S.</p>
+        <h4>Rata-rata dan respons positif per pernyataan</h4>
+        <div class="tablewrap"><table class="tbl"><thead><tr><th>No.</th><th>Pernyataan</th><th>Rata-rata</th><th>SS + S</th><th>Jumlah jawaban</th></tr></thead><tbody>${itemSummaryRows}</tbody></table></div>
+        <h4 style="margin-top:18px">Distribusi pilihan jawaban</h4>
+        <div class="tablewrap"><table class="tbl"><thead><tr><th>Pilihan</th><th>Frekuensi</th><th>Persentase</th></tr></thead><tbody>${distributionRows}</tbody></table></div>
+      </section>` : '';
     const materialRows = materials.length
       ? materials.sort((x,y)=>(x.order_number||0)-(y.order_number||0)).map((x,i) => {
           const isEbook = /e[- ]?modul/i.test(x.title || '') || x.material_type === 'pdf';
@@ -123,6 +154,7 @@
         ${materials.length ? `<div class="tablewrap"><table class="tbl"><thead><tr><th>No.</th><th>Materi</th><th>Jenis</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${materialRows}</tbody></table></div>` : '<div class="empty">Belum ada materi.</div>'}
       </section>
 
+      ${practicalitySummary}
       <section class="card">
         <div class="section-head">
           <div><h3>Hasil Respons Peserta Didik</h3><small class="sub">Pilih nama siswa untuk membaca angket dan refleksi.</small></div>
