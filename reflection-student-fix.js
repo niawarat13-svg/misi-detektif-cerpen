@@ -9,7 +9,7 @@
   try{
    const rows=await cloudRows('reflections'),r=(rows||[]).find(x=>String(x.id)===String(id));if(!r)return alert('Respons siswa tidak ditemukan.');
    const heading=document.querySelector('#app [data-reflection-heading]');
-   const section=heading?heading.closest('section.card'):[...document.querySelectorAll('#app section.card')].find(s=>(s.textContent||'').includes('Hasil Refleksi Kelas'));
+   const section=heading?heading.closest('section.card'):[...document.querySelectorAll('#app section.card')].find(s=>/Hasil (Refleksi Kelas|Respons Peserta Didik)/i.test(s.textContent||''));
    if(!section)return alert('Bagian Hasil Refleksi Kelas tidak ditemukan.');
    const ratings=r.ratings||{};
    const ratingRows=items.map((t,i)=>{let v=Number(ratings['q'+(i+1)]||0);return '<tr><td>'+(i+1)+'</td><td>'+e(t)+'</td><td><b>'+(v?e(scale[v]):'Belum dijawab')+'</b>'+(v?' ('+v+')':'')+'</td></tr>';}).join('');
@@ -20,7 +20,7 @@
    const body=section.querySelector('[data-reflection-body]');
    const name=e(r.student_name||'Siswa');
    const html='<h4 style="margin:12px 0">'+name+'</h4>'+details+'<button class="ghost" style="margin-top:14px;background:#eaf2f8;color:#17365d" onclick="showClassReflectionList(\''+e(code)+'\')">← Kembali ke daftar siswa</button>';
-   if(body)body.innerHTML=html;else section.innerHTML='<div class="section-head"><h3>Hasil Refleksi Kelas</h3></div>'+html;
+   if(body)body.innerHTML=html;else { const header=section.querySelector('.section-head'); section.innerHTML=(header?header.outerHTML:'<div class="section-head"><h3>Hasil Respons Peserta Didik</h3></div>')+'<div data-reflection-body>'+html+'</div>'; }
   }catch(err){console.error('openClassReflection:',err);alert('Respons belum dapat ditampilkan.');}
  };
  window.showClassReflectionList=async function(code){await refreshReflectionIdentity(code);};
@@ -30,7 +30,7 @@
    const byId=new Map((students||[]).map(s=>[s.id,s]));
    const cls=(await teacherClasses()).find(c=>c.code===code);
    const filtered=(reflections||[]).filter(r=>(r.class_code&&r.class_code===code)||(cls&&r.class_id===cls.id)||(!r.class_code&&!r.class_id&&byId.get(r.student_id)?.class_code===code));
-   const heading=[...document.querySelectorAll('#app h3')].find(h=>(h.textContent||'').trim().toLowerCase().includes('refleksi'));if(!heading)return;
+   const heading=[...document.querySelectorAll('#app h3')].find(h=>/Hasil (Refleksi Kelas|Respons Peserta Didik)/i.test((h.textContent||'').trim()));if(!heading)return;
    const section=heading.closest('section.card');if(!section)return;
    const body=filtered.length?filtered.map(r=>{const s=byId.get(r.student_id)||{},name=e(r.student_name||s.name||'Siswa');return '<div class="row"><div><b>'+name+'</b><small>Angket respons telah dikirim</small></div><button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="openClassReflection(\''+e(r.id)+'\',\''+e(code)+'\')">Lihat Respons</button></div>';}).join(''):'<div class="empty">Belum ada respons peserta didik untuk kelas ini.</div>';
    section.innerHTML='<div class="section-head"><div><h3>Hasil Respons Peserta Didik</h3><small class="sub">Pilih nama siswa untuk membaca jawaban angket.</small></div><button class="ghost" style="background:#eaf2f8;color:#17365d" onclick="showClassReflectionList(\''+e(code)+'\')">↻ Muat ulang</button></div><div data-reflection-body>'+body+'</div>';
