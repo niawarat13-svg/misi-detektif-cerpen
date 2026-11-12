@@ -7,22 +7,18 @@
  const safe=x=>e(x||'—').replace(/\n/g,'<br>');
  window.openClassReflection=async function(id,code){
   try{
-   const rows=await cloudRows('reflections'),r=(rows||[]).find(x=>String(x.id)===String(id));if(!r)return alert('Respons siswa tidak ditemukan.');
-   const heading=document.querySelector('#app [data-reflection-heading]');
-   const section=heading?heading.closest('section.card'):[...document.querySelectorAll('#app section.card')].find(s=>/Hasil (Refleksi Kelas|Respons Peserta Didik)/i.test(s.textContent||''));
-   if(!section)return alert('Bagian Hasil Refleksi Kelas tidak ditemukan.');
+   const rows=await cloudRows('reflections'),r=(rows||[]).find(x=>String(x.id)===String(id));
+   if(!r)return alert('Respons siswa tidak ditemukan.');
    const ratings=r.ratings||{};
-   const ratingRows=items.map((t,i)=>{let v=Number(ratings['q'+(i+1)]||0);return '<tr><td>'+(i+1)+'</td><td>'+e(t)+'</td><td><b>'+(v?e(scale[v]):'Belum dijawab')+'</b>'+(v?' ('+v+')':'')+'</td></tr>';}).join('');
-   const opens=[['1. Apa kelebihan media pembelajaran ini?',r.open1],['2. Apa kekurangan media pembelajaran ini?',r.open2],['3. Apa saran Anda untuk perbaikan media?',r.open3]];
-   const openHtml=opens.map(([q,v])=>'<div style="padding:12px 0;border-bottom:1px solid #e2e8f0"><b>'+q+'</b><p style="margin:7px 0;line-height:1.6">'+safe(v)+'</p></div>').join('');
-   const oldHtml=[['Unsur yang paling saya pahami',r.r1],['Unsur yang masih sulit',r.r2],['Bukti teks membantu saya karena',r.r3],['Bagian website yang paling membantu',r.r5]].map(([q,v])=>'<div style="padding:10px 0"><b>'+q+'</b><p>'+safe(v)+'</p></div>').join('');
-   const details=Object.keys(ratings).length?'<h4>Angket Pernyataan</h4><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:8px">No.</th><th style="text-align:left;padding:8px">Pernyataan</th><th style="text-align:left;padding:8px">Jawaban</th></tr></thead><tbody>'+ratingRows+'</tbody></table></div><h4 style="margin-top:22px">Pertanyaan Terbuka</h4>'+openHtml:oldHtml;
-   const body=section.querySelector('[data-reflection-body]');
-   const name=e(r.student_name||'Siswa');
-   const html='<h4 style="margin:12px 0">'+name+'</h4>'+details+'<button class="ghost" style="margin-top:14px;background:#eaf2f8;color:#17365d" onclick="showClassReflectionList(\''+e(code)+'\')">← Kembali ke daftar siswa</button>';
-   if(body)body.innerHTML=html;else { const header=section.querySelector('.section-head'); section.innerHTML=(header?header.outerHTML:'<div class="section-head"><h3>Hasil Respons Peserta Didik</h3></div>')+'<div data-reflection-body>'+html+'</div>'; }
-  }catch(err){console.error('openClassReflection:',err);alert('Respons belum dapat ditampilkan.');}
+   const ratingRows=items.map((t,i)=>{const v=Number(ratings['q'+(i+1)]||0);return '<tr><td style="padding:9px;border-bottom:1px solid #e2e8f0">'+(i+1)+'</td><td style="padding:9px;border-bottom:1px solid #e2e8f0">'+e(t)+'</td><td style="padding:9px;border-bottom:1px solid #e2e8f0"><b>'+(v?e(scale[v]):'Belum dijawab')+'</b>'+(v?' ('+v+')':'')+'</td></tr>';}).join('');
+   const openHtml=[['1. Apa kelebihan media pembelajaran ini?',r.open1],['2. Apa kekurangan media pembelajaran ini?',r.open2],['3. Apa saran Anda untuk perbaikan media?',r.open3]].map(([q,v])=>'<div style="padding:12px 0;border-bottom:1px solid #e2e8f0"><b>'+q+'</b><p style="margin:7px 0;line-height:1.6">'+safe(v)+'</p></div>').join('');
+   const legacy=[['Unsur yang paling saya pahami',r.r1],['Unsur yang masih sulit',r.r2],['Bukti teks membantu saya karena',r.r3],['Bagian website yang paling membantu',r.r5]].map(([q,v])=>'<div style="padding:10px 0"><b>'+q+'</b><p>'+safe(v)+'</p></div>').join('');
+   const hasQuestionnaire=Object.keys(ratings).length>0;
+   const content=hasQuestionnaire?'<h3>Angket Pernyataan (15 Butir)</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:9px">No.</th><th style="text-align:left;padding:9px">Pernyataan</th><th style="text-align:left;padding:9px">Jawaban</th></tr></thead><tbody>'+ratingRows+'</tbody></table></div><h3 style="margin-top:24px">Pertanyaan Terbuka</h3>'+openHtml:'<h3>Refleksi Pembelajaran Sebelumnya</h3>'+legacy;
+   shell('<main class="main"><div class="kicker">HASIL RESPONS PESERTA DIDIK</div><h2 class="h2">'+e(r.student_name||'Siswa')+'</h2><p class="sub">'+(hasQuestionnaire?'Jawaban angket respons media pembelajaran.':'Jawaban refleksi versi sebelumnya.')+'</p><section class="card">'+content+'</section><button class="ghost" style="margin-top:14px;background:#eaf2f8;color:#17365d" onclick="teacherClass(\''+e(code)+'\')">← Kembali ke kelas</button></main>','Respons Peserta Didik');
+  }catch(err){console.error('openClassReflection:',err);alert('Respons belum dapat ditampilkan: '+(err.message||err));}
  };
+ window.viewStudentReflection=window.openClassReflection;
  window.showClassReflectionList=async function(code){await refreshReflectionIdentity(code);};
  async function refreshReflectionIdentity(code){
   try{
