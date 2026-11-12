@@ -149,6 +149,34 @@
       if(y>170){doc.addPage();y=18;}
       doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('Distribusi Pilihan Jawaban',14,y);
       doc.autoTable({startY:y+4,head:[['Pilihan jawaban','Frekuensi','Persentase']],body:distRows,theme:'grid',styles:{font:'helvetica',fontSize:9,cellPadding:2.5},headStyles:{fillColor:[30,65,105]},margin:{left:14,right:150},tableWidth:130});
+
+      // Bagian 2: kesimpulan deskriptif berdasarkan hasil angket kelas.
+      let sectionY=doc.lastAutoTable.finalY+11;
+      if(sectionY>155){doc.addPage();sectionY=20;}
+      doc.setFont('helvetica','bold');doc.setFontSize(11);
+      doc.text('Kesimpulan Hasil Kepraktisan',14,sectionY);
+      doc.setFont('helvetica','normal');doc.setFontSize(9.5);
+      const conclusion='Berdasarkan '+responses.length+' responden dan '+total+' jawaban pada 15 pernyataan, media pembelajaran Misi Detektif Cerpen memperoleh rata-rata '+mean.toFixed(2)+' dari skor maksimal 5, atau '+percent.toFixed(1)+'% dari skor maksimal. Berdasarkan interval kategori yang digunakan, hasil tersebut termasuk kategori '+category.toLowerCase()+'. Hasil ini merupakan gambaran respons peserta didik pada kelas yang dipilih dan perlu ditafsirkan sesuai jumlah responden yang telah mengisi angket.';
+      const conclusionLines=doc.splitTextToSize(conclusion,268);
+      doc.text(conclusionLines,14,sectionY+7);
+      sectionY+=8+conclusionLines.length*4.5+5;
+      
+      // Bagian 3: keterangan teknis penghitungan skor.
+      if(sectionY>174){doc.addPage();sectionY=20;}
+      doc.setFont('helvetica','bold');doc.setFontSize(11);
+      doc.text('Metode Penghitungan Skor',14,sectionY);
+      doc.setFont('helvetica','normal');doc.setFontSize(9);
+      const methodLines=[
+        'Instrumen menggunakan skala Likert lima tingkat: Sangat Setuju (5), Setuju (4), Netral (3), Tidak Setuju (2), dan Sangat Tidak Setuju (1).',
+        'Rata-rata keseluruhan dihitung dengan membagi jumlah seluruh skor jawaban yang valid dengan jumlah jawaban valid. Persentase skor maksimal dihitung dengan rumus: (rata-rata keseluruhan / 5) x 100%.',
+        'Persentase respons positif per pernyataan merupakan gabungan jawaban Sangat Setuju dan Setuju dibandingkan jumlah jawaban valid pada pernyataan tersebut.',
+        'Kategori berdasarkan rata-rata: 1,00–1,80 tidak praktis; 1,81–2,60 kurang praktis; 2,61–3,40 cukup praktis; 3,41–4,20 praktis; dan 4,21–5,00 sangat praktis.'
+      ];
+      methodLines.forEach((line,index)=>{
+        const wrapped=doc.splitTextToSize((index+1)+'. '+line,268);
+        doc.text(wrapped,14,sectionY);
+        sectionY+=wrapped.length*4.2+2.5;
+      });
       const pageCount=doc.getNumberOfPages();
       for(let p=1;p<=pageCount;p++){doc.setPage(p);doc.setFontSize(8);doc.setTextColor(100);doc.text('Misi Detektif Cerpen | Laporan rekapitulasi kelas',14,202);doc.text('Halaman '+p+' dari '+pageCount,doc.internal.pageSize.getWidth()-14,202,{align:'right'});}
       const safeCode=String(code).replace(/[^a-z0-9_-]/gi,'_');
