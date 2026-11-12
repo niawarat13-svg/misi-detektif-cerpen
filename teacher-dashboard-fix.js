@@ -130,55 +130,67 @@
       const distRows=[5,4,3,2,1].map(v=>[labels[v],String(values.filter(x=>x===v).length),total?(values.filter(x=>x===v).length/total*100).toFixed(1)+'%':'0,0%']);
       const {jsPDF}=window.jspdf;
       const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+      const pageW=doc.internal.pageSize.getWidth();
+      const pageH=doc.internal.pageSize.getHeight();
+      const left=14, right=14, textW=pageW-left-right;
+      const font='times';
+      const fontSize=12;
+      const setText=(style='normal')=>{doc.setFont(font,style);doc.setFontSize(fontSize);doc.setTextColor(25,25,25);};
       const className=cls.name||cls.class_name||code;
       const date=new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
-      doc.setFont('helvetica','bold');doc.setFontSize(16);
-      doc.text('LAPORAN HASIL ANGKET RESPONS PESERTA DIDIK',14,17);
-      doc.setFont('helvetica','normal');doc.setFontSize(10);
-      doc.text('Media Pembelajaran Misi Detektif Cerpen',14,24);
-      doc.text('Kelas: '+className+'   |   Kode kelas: '+code,14,32);
-      doc.text('Tanggal laporan: '+date+'   |   Jumlah responden: '+responses.length+'   |   Jumlah jawaban: '+total,14,39);
-      doc.setFont('helvetica','bold');doc.setFontSize(11);
-      doc.text('Ringkasan Kepraktisan Media',14,49);
-      doc.setFont('helvetica','normal');doc.setFontSize(10);
-      doc.text('Rata-rata keseluruhan: '+mean.toFixed(2)+' dari 5',14,57);
-      doc.text('Persentase skor maksimal: '+percent.toFixed(1)+'%',95,57);
-      doc.text('Kategori: '+category,190,57);
-      doc.autoTable({startY:64,head:[['No.','Pernyataan','Rata-rata','SS + S','Jumlah jawaban']],body:itemRows,theme:'grid',styles:{font:'helvetica',fontSize:8,cellPadding:2.2,overflow:'linebreak'},headStyles:{fillColor:[30,65,105]},columnStyles:{0:{cellWidth:12},1:{cellWidth:155},2:{cellWidth:25},3:{cellWidth:25},4:{cellWidth:30}},margin:{left:14,right:14}});
+      setText('bold');doc.text('LAPORAN HASIL ANGKET RESPONS PESERTA DIDIK',left,18);
+      setText();doc.text('Media Pembelajaran Misi Detektif Cerpen',left,26);
+      doc.text('Kelas: '+className+'   |   Kode kelas: '+code,left,34);
+      doc.text('Tanggal laporan: '+date+'   |   Jumlah responden: '+responses.length+'   |   Jumlah jawaban: '+total,left,42);
+      setText('bold');doc.text('Ringkasan Kepraktisan Media',left,53);
+      setText();doc.text('Rata-rata keseluruhan: '+mean.toFixed(2)+' dari 5',left,62);
+      doc.text('Persentase skor maksimal: '+percent.toFixed(1)+'%',105,62);
+      doc.text('Kategori: '+category,205,62);
+      doc.autoTable({startY:69,head:[['No.','Pernyataan','Rata-rata','SS + S','Jumlah jawaban']],body:itemRows,theme:'grid',
+        styles:{font:'times',fontSize:12,cellPadding:2.1,overflow:'linebreak',textColor:[25,25,25],valign:'middle'},
+        headStyles:{font:'times',fontStyle:'bold',fontSize:12,fillColor:[30,65,105],textColor:[255,255,255]},
+        columnStyles:{0:{cellWidth:12},1:{cellWidth:145},2:{cellWidth:27},3:{cellWidth:27},4:{cellWidth:35}},
+        margin:{left,right}});
       let y=doc.lastAutoTable.finalY+10;
-      if(y>170){doc.addPage();y=18;}
-      doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('Distribusi Pilihan Jawaban',14,y);
-      doc.autoTable({startY:y+4,head:[['Pilihan jawaban','Frekuensi','Persentase']],body:distRows,theme:'grid',styles:{font:'helvetica',fontSize:9,cellPadding:2.5},headStyles:{fillColor:[30,65,105]},margin:{left:14,right:150},tableWidth:130});
+      if(y+45>pageH-16){doc.addPage();y=20;}
+      setText('bold');doc.text('Distribusi Pilihan Jawaban',left,y);
+      doc.autoTable({startY:y+5,head:[['Pilihan jawaban','Frekuensi','Persentase']],body:distRows,theme:'grid',
+        styles:{font:'times',fontSize:12,cellPadding:2.4,textColor:[25,25,25]},
+        headStyles:{font:'times',fontStyle:'bold',fontSize:12,fillColor:[30,65,105],textColor:[255,255,255]},
+        margin:{left,right:150},tableWidth:133});
 
-      // Bagian 2: kesimpulan deskriptif berdasarkan hasil angket kelas.
-      let sectionY=doc.lastAutoTable.finalY+11;
-      if(sectionY>155){doc.addPage();sectionY=20;}
-      doc.setFont('helvetica','bold');doc.setFontSize(11);
-      doc.text('Kesimpulan Hasil Kepraktisan',14,sectionY);
-      doc.setFont('helvetica','normal');doc.setFontSize(9.5);
+      // Bagian 2: kesimpulan hasil kepraktisan.
+      let sectionY=doc.lastAutoTable.finalY+12;
+      const ensureRoom=(needed)=>{if(sectionY+needed>pageH-18){doc.addPage();sectionY=20;}};
+      ensureRoom(35);
+      setText('bold');doc.text('Kesimpulan Hasil Kepraktisan',left,sectionY);
       const conclusion='Berdasarkan '+responses.length+' responden dan '+total+' jawaban pada 15 pernyataan, media pembelajaran Misi Detektif Cerpen memperoleh rata-rata '+mean.toFixed(2)+' dari skor maksimal 5, atau '+percent.toFixed(1)+'% dari skor maksimal. Berdasarkan interval kategori yang digunakan, hasil tersebut termasuk kategori '+category.toLowerCase()+'. Hasil ini merupakan gambaran respons peserta didik pada kelas yang dipilih dan perlu ditafsirkan sesuai jumlah responden yang telah mengisi angket.';
-      const conclusionLines=doc.splitTextToSize(conclusion,268);
-      doc.text(conclusionLines,14,sectionY+7);
-      sectionY+=8+conclusionLines.length*4.5+5;
-      
-      // Bagian 3: keterangan teknis penghitungan skor.
-      if(sectionY>174){doc.addPage();sectionY=20;}
-      doc.setFont('helvetica','bold');doc.setFontSize(11);
-      doc.text('Metode Penghitungan Skor',14,sectionY);
-      doc.setFont('helvetica','normal');doc.setFontSize(9);
+      setText();const conclusionLines=doc.splitTextToSize(conclusion,textW);
+      sectionY+=7;ensureRoom(conclusionLines.length*5.8+12);doc.text(conclusionLines,left,sectionY);
+      sectionY+=conclusionLines.length*5.8+10;
+
+      // Bagian 3: metode penghitungan skor.
+      ensureRoom(30);setText('bold');doc.text('Metode Penghitungan Skor',left,sectionY);
+      sectionY+=8;setText();
       const methodLines=[
-        'Instrumen menggunakan skala Likert lima tingkat: Sangat Setuju (5), Setuju (4), Netral (3), Tidak Setuju (2), dan Sangat Tidak Setuju (1).',
-        'Rata-rata keseluruhan dihitung dengan membagi jumlah seluruh skor jawaban yang valid dengan jumlah jawaban valid. Persentase skor maksimal dihitung dengan rumus: (rata-rata keseluruhan / 5) x 100%.',
-        'Persentase respons positif per pernyataan merupakan gabungan jawaban Sangat Setuju dan Setuju dibandingkan jumlah jawaban valid pada pernyataan tersebut.',
-        'Kategori berdasarkan rata-rata: 1,00–1,80 tidak praktis; 1,81–2,60 kurang praktis; 2,61–3,40 cukup praktis; 3,41–4,20 praktis; dan 4,21–5,00 sangat praktis.'
+        '1. Instrumen menggunakan skala Likert lima tingkat: Sangat Setuju (5), Setuju (4), Netral (3), Tidak Setuju (2), dan Sangat Tidak Setuju (1).',
+        '2. Rata-rata keseluruhan dihitung dengan membagi jumlah seluruh skor jawaban yang valid dengan jumlah jawaban valid. Persentase skor maksimal dihitung dengan rumus: (rata-rata keseluruhan / 5) x 100%.',
+        '3. Persentase respons positif per pernyataan merupakan gabungan jawaban Sangat Setuju dan Setuju dibandingkan jumlah jawaban valid pada pernyataan tersebut.',
+        '4. Kategori berdasarkan rata-rata: 1,00–1,80 tidak praktis; 1,81–2,60 kurang praktis; 2,61–3,40 cukup praktis; 3,41–4,20 praktis; dan 4,21–5,00 sangat praktis.'
       ];
-      methodLines.forEach((line,index)=>{
-        const wrapped=doc.splitTextToSize((index+1)+'. '+line,268);
-        doc.text(wrapped,14,sectionY);
-        sectionY+=wrapped.length*4.2+2.5;
+      methodLines.forEach(line=>{
+        const wrapped=doc.splitTextToSize(line,textW);
+        const needed=wrapped.length*5.8+4;
+        ensureRoom(needed);
+        setText();doc.text(wrapped,left,sectionY);
+        sectionY+=needed;
       });
       const pageCount=doc.getNumberOfPages();
-      for(let p=1;p<=pageCount;p++){doc.setPage(p);doc.setFontSize(8);doc.setTextColor(100);doc.text('Misi Detektif Cerpen | Laporan rekapitulasi kelas',14,202);doc.text('Halaman '+p+' dari '+pageCount,doc.internal.pageSize.getWidth()-14,202,{align:'right'});}
+      for(let p=1;p<=pageCount;p++){
+        doc.setPage(p);doc.setFont(font,'normal');doc.setFontSize(9);doc.setTextColor(100);
+        doc.text('Misi Detektif Cerpen | Laporan rekapitulasi kelas',left,pageH-7);
+        doc.text('Halaman '+p+' dari '+pageCount,pageW-right,pageH-7,{align:'right'});
+      }
       const safeCode=String(code).replace(/[^a-z0-9_-]/gi,'_');
       doc.save('Laporan_Kepraktisan_'+safeCode+'_'+new Date().toISOString().slice(0,10)+'.pdf');
     } catch(err) {
